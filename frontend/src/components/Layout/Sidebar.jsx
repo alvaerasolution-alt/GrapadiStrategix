@@ -87,22 +87,21 @@ const Sidebar = ({ activeSection, setActiveSection, isOpen, onToggle, onClose, i
                                 key={item.id}
                                 onClick={() => handleMenuClick(item.id)}
                                 className={`w-full flex items-center p-3 rounded-lg transition-all duration-200 group ${isActive
-                                        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
-                                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
+                                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
                                     }`}
                             >
                                 <Icon
                                     size={20}
-                                    className={`flex-shrink-0 ${isActive ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'
-                                        }`}
+                                    className={`shrink-0 ${isActive ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}
                                 />
 
                                 {/* Menu Text */}
                                 <span className={`
-                  font-medium text-left ml-3 
-                  transition-all duration-200
-                  ${isOpen ? 'opacity-100 block' : 'lg:opacity-0 lg:absolute lg:-left-96'}
-                `}>
+                                font-medium text-left ml-3 
+                                transition-all duration-200
+                                ${isOpen ? 'opacity-100 block' : 'lg:opacity-0 lg:absolute lg:-left-96'}
+                                `}>
                                     {item.label}
                                 </span>
 
@@ -122,11 +121,12 @@ const Sidebar = ({ activeSection, setActiveSection, isOpen, onToggle, onClose, i
                                 <ChevronRight
                                     size={16}
                                     className={`
-                                    flex-shrink-0 transition-transform duration-200 ml-auto
-                                    ${isActive ? 'text-green-600 dark:text-green-400 rotate-90' : 'text-gray-400 dark:text-gray-500'}
+                                    shrink-0 transition-transform duration-200 ml-auto
+                                    ${isActive ? 'text-green-600 rotate-90' : 'text-gray-400'}
                                     ${isOpen ? 'opacity-100' : 'lg:opacity-0'}
                                 `}
                                 />
+
                             </button>
                         )
                     })}

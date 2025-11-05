@@ -59,7 +59,10 @@ const Header = ({ onToggleSidebar, isMobile, isDarkMode, toggleDarkMode }) => {
                     </button>
 
                     <div className="flex items-center space-x-2 lg:space-x-3 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                        <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center"
+                            style={{ background: 'linear-gradient(to bottom right, #22c55e, #16a34a)' }}
+                        >
                             <User size={16} className="text-white" />
                         </div>
                         <div className="hidden md:block">
