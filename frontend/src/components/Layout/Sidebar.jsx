@@ -40,6 +40,7 @@ const Sidebar = ({
             description: 'Kelola rencana bisnis lengkap',
             subItems: [
                 { id: 'business-background', label: 'Latar Belakang Bisnis', icon: Building },
+                { id: 'market-analysis', label: 'Analisis Pasar', icon: BarChart3 },
             ]
         },
         {

@@ -9,6 +9,7 @@ import {
     Building
 } from 'lucide-react';
 import Background from '../components/BusinessPlan/BusinessBackground/Background';
+import MarketAnalysis from '../components/BusinessPlan/MarketAnalysis/MarketAnalysis';
 
 const BusinessPlan = ({ activeSubSection, setActiveSubSection }) => {
     const [view, setView] = useState('main');
@@ -61,10 +62,32 @@ const BusinessPlan = ({ activeSubSection, setActiveSubSection }) => {
                     </div>
                 </div>
 
-                {/* Rencana Pemasaran Card */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group hover:border-purple-300 dark:hover:border-purple-600">
+                {/* Analisis Pasar Card */}
+                <div
+                    className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group hover:border-purple-300 dark:hover:border-purple-600"
+                    onClick={() => handleSubSectionClick('market-analysis')}
+                >
                     <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                        <Target className="text-purple-600 dark:text-purple-400" size={24} />
+                        <BarChart3 className="text-purple-600 dark:text-purple-400" size={24} />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                        Analisis Pasar
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                        Analisis target pasar, kompetitor, dan keunggulan kompetitif
+                    </p>
+                    <div className="flex items-center text-purple-600 dark:text-purple-400 text-sm font-medium">
+                        <span>Kelola Analisis</span>
+                        <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                </div>
+
+                {/* Rencana Pemasaran Card */}
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group hover:border-blue-300 dark:hover:border-blue-600">
+                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <Target className="text-blue-600 dark:text-blue-400" size={24} />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                         Rencana Pemasaran
@@ -112,7 +135,7 @@ const BusinessPlan = ({ activeSubSection, setActiveSubSection }) => {
                 {/* SWOT Analysis Card */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group hover:border-indigo-300 dark:hover:border-indigo-600">
                     <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/20 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                        <BarChart3 className="text-indigo-600 dark:text-indigo-400" size={24} />
+                        <FileText className="text-indigo-600 dark:text-indigo-400" size={24} />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                         Analisis SWOT
@@ -132,7 +155,8 @@ const BusinessPlan = ({ activeSubSection, setActiveSubSection }) => {
         switch (view) {
             case 'business-background':
                 return <Background />;
-
+            case 'market-analysis':
+                return <MarketAnalysis />;
             default:
                 return renderMainView();
         }

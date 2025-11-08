@@ -1,0 +1,105 @@
+import { useState, useEffect } from 'react';
+import { Save } from 'lucide-react';
+import MarketAnalysisForm from './MarketAnalysis-Form';
+import { marketAnalysisApi } from '../../../services/businessPlan';
+import { toast } from 'react-toastify';
+
+const MarketAnalysisEdit = ({ analysis, onBack, onSuccess }) => {
+    const [isLoading, setIsLoading] = useState(false);
+
+    const [formData, setFormData] = useState({
+        target_market: '',
+        market_size: '',
+        market_trends: '',
+        main_competitors: '',
+        competitor_strengths: '',
+        competitor_weaknesses: '',
+        competitive_advantage: ''
+    });
+
+    useEffect(() => {
+        if (analysis) {
+            setFormData({
+                target_market: analysis.target_market || '',
+                market_size: analysis.market_size || '',
+                market_trends: analysis.market_trends || '',
+                main_competitors: analysis.main_competitors || '',
+                competitor_strengths: analysis.competitor_strengths || '',
+                competitor_weaknesses: analysis.competitor_weaknesses || '',
+                competitive_advantage: analysis.competitive_advantage || ''
+            });
+        }
+    }, [analysis]);
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        try {
+            const user = JSON.parse(localStorage.getItem('user'));
+            
+            if (!user || !user.id) {
+                throw new Error('User data not found');
+            }
+
+            const submitData = {
+                ...formData,
+                user_id: user.id
+            };
+
+            console.log('Updating market analysis data:', submitData);
+            const response = await marketAnalysisApi.update(analysis.id, submitData);
+
+            if (response.data.status === 'success') {
+                toast.success('Analisis pasar berhasil diperbarui!');
+                onSuccess();
+            } else {
+                throw new Error(response.data.message || 'Terjadi kesalahan');
+            }
+        } catch (error) {
+            console.error('Error updating market analysis:', error);
+            
+            let errorMessage = 'Terjadi kesalahan saat memperbarui analisis pasar';
+            if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.response?.data?.errors) {
+                const errors = Object.values(error.response.data.errors).flat();
+                errorMessage = errors.join(', ');
+            }
+            
+            toast.error(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    if (!analysis) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+            </div>
+        );
+    }
+
+    return (
+        <MarketAnalysisForm
+            title="Edit Analisis Pasar"
+            subtitle="Perbarui informasi analisis pasar"
+            formData={formData}
+            isLoading={isLoading}
+            onInputChange={handleInputChange}
+            onSubmit={handleSubmit}
+            onBack={onBack}
+            submitButtonText="Perbarui Analisis"
+            submitButtonIcon={<Save size={16} />}
+            mode="edit"
+        />
+    );
+};
+
+export default MarketAnalysisEdit;
