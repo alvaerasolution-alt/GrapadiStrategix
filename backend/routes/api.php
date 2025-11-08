@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\MarketAnalysisController;
+use App\Http\Controllers\BusinessPlan\BusinessController;
+use App\Http\Controllers\BusinessPlan\MarketAnalysisController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 
@@ -46,18 +46,18 @@ Route::get('/test-email/{email?}', function ($email = null) {
 
 // Business Background
 Route::prefix('business-background')->group(function () {
-    Route::post('/', [BusinessController::class, 'storeBusinessBackground']);     // Create
-    Route::get('/', [BusinessController::class, 'indexBusinessBackground']);      // Read all
-    Route::get('/{id}', [BusinessController::class, 'showBusinessBackground']);   // Read single
-    Route::put('/{id}', [BusinessController::class, 'updateBusinessBackground']); // Update
-    Route::delete('/{id}', [BusinessController::class, 'destroyBusinessBackground']); // Delete
+    Route::post('/', [BusinessController::class, 'store']);     // Create
+    Route::get('/', [BusinessController::class, 'index']);      // Read all
+    Route::get('/{id}', [BusinessController::class, 'show']);   // Read single
+    Route::put('/{id}', [BusinessController::class, 'update']); // Update
+    Route::delete('/{id}', [BusinessController::class, 'destroy']); // Delete
 });
 
 // Market Analysis
 Route::prefix('market-analysis')->group(function () {
-    Route::get('/', [BusinessController::class, 'indexMarketAnalysis']); // optional: ?user_id=1 or ?business_background_id=2
-    Route::get('/{id}', [BusinessController::class, 'showMarketAnalysis']);
-    Route::post('/', [BusinessController::class, 'storeMarketAnalysis']);
-    Route::put('/{id}', [BusinessController::class, 'updateMarketAnalysis']);
-    Route::delete('/{id}', [BusinessController::class, 'destroyMarketAnalysis']);
+    Route::get('/', [MarketAnalysisController::class, 'index']); // optional: ?user_id=1 or ?business_background_id=2
+    Route::get('/{id}', [MarketAnalysisController::class, 'show']);
+    Route::post('/', [MarketAnalysisController::class, 'store']);
+    Route::put('/{id}', [MarketAnalysisController::class, 'update']);
+    Route::delete('/{id}', [MarketAnalysisController::class, 'destroy']);
 });
