@@ -1,9 +1,11 @@
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Building, Loader } from 'lucide-react';
 
 const MarketAnalysisForm = ({
     title,
     subtitle,
     formData,
+    businesses,
+    isLoadingBusinesses,
     isLoading,
     onInputChange,
     onSubmit,
@@ -35,6 +37,44 @@ const MarketAnalysisForm = ({
             <form onSubmit={onSubmit}>
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
                     
+                    {/* Pilih Bisnis */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Pilih Bisnis *
+                        </label>
+                        {isLoadingBusinesses ? (
+                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                                <Loader className="animate-spin h-4 w-4" />
+                                <span>Memuat data bisnis...</span>
+                            </div>
+                        ) : businesses.length === 0 ? (
+                            <div className="text-center py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                                <Building className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                                    Belum ada data bisnis. Silakan buat latar belakang bisnis terlebih dahulu.
+                                </p>
+                            </div>
+                        ) : (
+                            <select
+                                name="business_background_id"
+                                value={formData.business_background_id}
+                                onChange={onInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                required
+                            >
+                                <option value="">Pilih Bisnis</option>
+                                {businesses.map((business) => (
+                                    <option key={business.id} value={business.id}>
+                                        {business.name} - {business.category}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Pilih bisnis yang akan dianalisis pasarannya
+                        </p>
+                    </div>
+
                     {/* Target Pasar */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -151,7 +191,7 @@ const MarketAnalysisForm = ({
                         </button>
                         <button
                             type="submit"
-                            disabled={isLoading}
+                            disabled={isLoading || isLoadingBusinesses || businesses.length === 0}
                             className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                             {isLoading ? (

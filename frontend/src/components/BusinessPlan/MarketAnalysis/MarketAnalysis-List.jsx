@@ -1,4 +1,4 @@
-import { BarChart3, Target, Users, TrendingUp, Plus, Eye, Edit3, Trash2, Loader, RefreshCw, X } from 'lucide-react';
+import { BarChart3, Target, Users, TrendingUp, Plus, Eye, Edit3, Trash2, Loader, RefreshCw, X, Building } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -15,6 +15,7 @@ const MarketAnalysisList = ({
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [analysisToDelete, setAnalysisToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [selectedBusiness, setSelectedBusiness] = useState('all');
 
     const handleDeleteClick = (analysisId, analysisTitle) => {
         setAnalysisToDelete({ id: analysisId, title: analysisTitle });
@@ -42,6 +43,30 @@ const MarketAnalysisList = ({
         setShowDeleteModal(false);
         setAnalysisToDelete(null);
     };
+
+    // Get unique businesses for filter
+    const getUniqueBusinesses = () => {
+        const businesses = analyses
+            .filter(analysis => analysis.businessBackground)
+            .map(analysis => ({
+                id: analysis.businessBackground.id,
+                name: analysis.businessBackground.name,
+                category: analysis.businessBackground.category
+            }));
+        
+        // Remove duplicates
+        return businesses.filter((business, index, self) => 
+            index === self.findIndex(b => b.id === business.id)
+        );
+    };
+
+    const filteredAnalyses = selectedBusiness === 'all' 
+        ? analyses 
+        : analyses.filter(analysis => 
+            analysis.businessBackground?.id === selectedBusiness
+        );
+
+    const uniqueBusinesses = getUniqueBusinesses();
 
     if (isLoading) {
         return (
@@ -168,6 +193,91 @@ const MarketAnalysisList = ({
                 </button>
             </div>
 
+            {/* FILTER BUTTONS - Horizontal */}
+            {analyses.length > 0 && (
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                            <Building size={16} />
+                            Filter Berdasarkan Bisnis:
+                        </h3>
+                        {selectedBusiness !== 'all' && (
+                            <button
+                                onClick={() => setSelectedBusiness('all')}
+                                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
+                            >
+                                Reset Filter
+                            </button>
+                        )}
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                        {/* Tombol Semua Bisnis */}
+                        <button
+                            onClick={() => setSelectedBusiness('all')}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 ${
+                                selectedBusiness === 'all'
+                                    ? 'bg-green-500 border-green-500 text-white shadow-sm'
+                                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            }`}
+                        >
+                            <Building size={14} />
+                            <span>Semua Bisnis</span>
+                            <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                                selectedBusiness === 'all' 
+                                    ? 'bg-green-600 text-white' 
+                                    : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                            }`}>
+                                {analyses.length}
+                            </span>
+                        </button>
+
+                        {/* Tombol untuk setiap bisnis */}
+                        {uniqueBusinesses.map(business => (
+                            <button
+                                key={business.id}
+                                onClick={() => setSelectedBusiness(business.id)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 ${
+                                    selectedBusiness === business.id
+                                        ? 'bg-blue-500 border-blue-500 text-white shadow-sm'
+                                        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                }`}
+                            >
+                                <Building size={14} />
+                                <div className="text-left">
+                                    <div className="font-medium text-sm">{business.name}</div>
+                                    <div className="text-xs opacity-80">{business.category}</div>
+                                </div>
+                                <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                                    selectedBusiness === business.id 
+                                        ? 'bg-blue-600 text-white' 
+                                        : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                                }`}>
+                                    {analyses.filter(a => a.businessBackground?.id === business.id).length}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Filter Info */}
+                    {selectedBusiness !== 'all' && (
+                        <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
+                                    <Building size={16} />
+                                    <span>
+                                        Menampilkan {filteredAnalyses.length} dari {analyses.length} analisis untuk{' '}
+                                        <strong>
+                                            {uniqueBusinesses.find(b => b.id === selectedBusiness)?.name}
+                                        </strong>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* LIST ANALISIS */}
             {analyses.length === 0 ? (
                 <div className="text-center py-12">
@@ -181,9 +291,21 @@ const MarketAnalysisList = ({
                         Tambah Analisis Pertama
                     </button>
                 </div>
+            ) : filteredAnalyses.length === 0 ? (
+                <div className="text-center py-12">
+                    <Building size={64} className="mx-auto text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Tidak ada analisis untuk bisnis ini</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">Tidak ditemukan analisis pasar untuk bisnis yang dipilih</p>
+                    <button
+                        onClick={() => setSelectedBusiness('all')}
+                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        Lihat Semua Analisis
+                    </button>
+                </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                    {analyses.map((analysis) => (
+                    {filteredAnalyses.map((analysis) => (
                         <div key={analysis.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center gap-3">
@@ -192,11 +314,16 @@ const MarketAnalysisList = ({
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-1">
-                                            Analisis Pasar {analysis.businessBackground?.name || 'Bisnis'}
+                                            {analysis.businessBackground?.name || 'Bisnis Tidak Ditemukan'}
                                         </h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            {new Date(analysis.created_at).toLocaleDateString('id-ID')}
-                                        </p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
+                                                {analysis.businessBackground?.category || 'Tidak ada kategori'}
+                                            </span>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                {new Date(analysis.created_at).toLocaleDateString('id-ID')}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -244,7 +371,7 @@ const MarketAnalysisList = ({
                                     Edit
                                 </button>
                                 <button
-                                    onClick={() => handleDeleteClick(analysis.id, `Analisis Pasar ${analysis.businessBackground?.name || 'Bisnis'}`)}
+                                    onClick={() => handleDeleteClick(analysis.id, analysis.businessBackground?.name || 'Analisis Pasar')}
                                     className="flex-1 bg-red-600 text-white py-2 px-3 rounded text-sm hover:bg-red-700 transition-colors flex items-center justify-center gap-1"
                                 >
                                     <Trash2 size={16} />

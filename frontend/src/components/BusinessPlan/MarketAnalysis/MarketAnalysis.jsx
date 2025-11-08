@@ -12,7 +12,7 @@ const MarketAnalysis = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Fetch semua market analyses
+    // Fetch semua market analyses dengan include business background
     const fetchAnalyses = async () => {
         try {
             setIsLoading(true);
@@ -20,7 +20,12 @@ const MarketAnalysis = () => {
 
             console.log('Fetching market analyses using API...');
             const user = JSON.parse(localStorage.getItem('user'));
-            const response = await marketAnalysisApi.getAll({ user_id: user?.id });
+            
+            // Fetch dengan parameter untuk include business background
+            const response = await marketAnalysisApi.getAll({ 
+                user_id: user?.id,
+                include: 'businessBackground' // Include business background data
+            });
 
             console.log('API Response:', response.data);
 

@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
 import MarketAnalysisForm from './MarketAnalysis-Form';
-import { marketAnalysisApi } from '../../../services/businessPlan';
+import { marketAnalysisApi, backgroundApi } from '../../../services/businessPlan';
 import { toast } from 'react-toastify';
 
 const MarketAnalysisEdit = ({ analysis, onBack, onSuccess }) => {
     const [isLoading, setIsLoading] = useState(false);
+    const [businesses, setBusinesses] = useState([]);
+    const [isLoadingBusinesses, setIsLoadingBusinesses] = useState(true);
 
     const [formData, setFormData] = useState({
+        business_background_id: '',
         target_market: '',
         market_size: '',
         market_trends: '',
@@ -17,9 +20,33 @@ const MarketAnalysisEdit = ({ analysis, onBack, onSuccess }) => {
         competitive_advantage: ''
     });
 
+    // Fetch business backgrounds untuk dropdown
+    const fetchBusinesses = async () => {
+        try {
+            setIsLoadingBusinesses(true);
+            const response = await backgroundApi.getAll();
+            
+            if (response.data.status === 'success') {
+                setBusinesses(response.data.data || []);
+            } else {
+                throw new Error('Failed to fetch business backgrounds');
+            }
+        } catch (error) {
+            console.error('Error fetching businesses:', error);
+            toast.error('Gagal memuat data bisnis');
+        } finally {
+            setIsLoadingBusinesses(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchBusinesses();
+    }, []);
+
     useEffect(() => {
         if (analysis) {
             setFormData({
+                business_background_id: analysis.business_background_id || '',
                 target_market: analysis.target_market || '',
                 market_size: analysis.market_size || '',
                 market_trends: analysis.market_trends || '',
@@ -38,6 +65,13 @@ const MarketAnalysisEdit = ({ analysis, onBack, onSuccess }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Validasi: business background harus dipilih
+        if (!formData.business_background_id) {
+            toast.error('Pilih bisnis terlebih dahulu');
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -91,6 +125,8 @@ const MarketAnalysisEdit = ({ analysis, onBack, onSuccess }) => {
             title="Edit Analisis Pasar"
             subtitle="Perbarui informasi analisis pasar"
             formData={formData}
+            businesses={businesses}
+            isLoadingBusinesses={isLoadingBusinesses}
             isLoading={isLoading}
             onInputChange={handleInputChange}
             onSubmit={handleSubmit}
