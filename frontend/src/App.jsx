@@ -14,7 +14,11 @@ import VerificationNotice from "./pages/VerificationNotice";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
-// Protected Route Component
+// 🔔 Import react-toastify
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+// 🔒 Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -29,7 +33,7 @@ const ProtectedRoute = ({ children }) => {
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
-// Public Route Component
+// 🌐 Public Route Component
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -78,7 +82,7 @@ function AppContent() {
     <div className={`min-h-screen ${isDarkMode ? "dark" : ""}`}>
       <Router>
         <Routes>
-          {/* Public Routes */}
+          {/* 🌍 Public Routes */}
           <Route
             path="/"
             element={
@@ -113,7 +117,6 @@ function AppContent() {
             }
           />
 
-          {/* Verification Notice Route */}
           <Route
             path="/verification-notice"
             element={
@@ -126,19 +129,6 @@ function AppContent() {
             }
           />
 
-          {/* Forgot Password */}
-          {/* <Route
-            path="/forgot-password"
-            element={
-              <PublicRoute>
-                <ForgotPassword
-                  isDarkMode={isDarkMode}
-                  toggleDarkMode={toggleDarkMode}
-                />
-              </PublicRoute>
-            }
-          /> */}
-
           <Route
             path="/forgot-password"
             element={
@@ -151,7 +141,6 @@ function AppContent() {
             }
           />
 
-          {/* Forgot Password */}
           <Route
             path="/reset-password/:token"
             element={
@@ -163,19 +152,8 @@ function AppContent() {
               </PublicRoute>
             }
           />
-          {/* <Route
-            path="/reset-password"
-            element={
-              <PublicRoute>
-                <ResetPassword
-                  isDarkMode={isDarkMode}
-                  toggleDarkMode={toggleDarkMode}
-                />
-              </PublicRoute>
-            }
-          /> */}
 
-          {/* Protected Routes */}
+          {/* 🔐 Protected Routes */}
           <Route
             path="/dashboard/*"
             element={
@@ -200,6 +178,20 @@ function App() {
   return (
     <AuthProvider>
       <AppContent />
+
+      {/* ✅ ToastContainer biar toast muncul */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+        style={{ zIndex: 9999 }} // biar gak ketiban modal
+      />
     </AuthProvider>
   );
 }

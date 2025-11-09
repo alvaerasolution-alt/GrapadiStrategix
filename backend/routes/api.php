@@ -9,6 +9,7 @@ use App\Http\Controllers\BusinessPlan\OperationalPlanController;
 use App\Http\Controllers\BusinessPlan\TeamStructureController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -29,10 +30,6 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-
-
-
-
 // Business Background
 Route::prefix('business-background')->group(function () {
     Route::post('/', [BusinessController::class, 'store']);     // Create
@@ -51,12 +48,13 @@ Route::prefix('market-analysis')->group(function () {
     Route::delete('/{id}', [MarketAnalysisController::class, 'destroy']);
 });
 
-// Product Service
+// Product Service Routes
 Route::prefix('product-service')->group(function () {
     Route::get('/', [ProductServiceController::class, 'index']);
-    Route::post('/', [ProductServiceController::class, 'store']);
     Route::get('/{id}', [ProductServiceController::class, 'show']);
-    Route::put('/{id}', [ProductServiceController::class, 'update']);
+    Route::post('/', [ProductServiceController::class, 'store']);
+    Route::post('/{id}', [ProductServiceController::class, 'update']); // POST untuk FormData
+    Route::put('/{id}', [ProductServiceController::class, 'update']); // PUT untuk JSON
     Route::delete('/{id}', [ProductServiceController::class, 'destroy']);
 });
 
