@@ -20,8 +20,8 @@ const ProductService = () => {
             setError(null);
 
             const user = JSON.parse(localStorage.getItem('user'));
-            
-            const response = await productServiceApi.getAll({ 
+
+            const response = await productServiceApi.getAll({
                 user_id: user?.id
             });
 
@@ -74,11 +74,12 @@ const ProductService = () => {
             const response = await productServiceApi.delete(productId, user?.id);
 
             if (response.data.status === 'success') {
+                // ✅ Notif cukup sekali di sini
                 toast.success('Produk/layanan berhasil dihapus!');
-                fetchProducts();
+                await fetchProducts();
                 setView('list');
             } else {
-                throw new Error(response.data.message || 'Failed to delete product/service');
+                throw new Error(response.data.message || 'Gagal menghapus produk/layanan');
             }
         } catch (error) {
             let errorMessage = 'Terjadi kesalahan saat menghapus data produk/layanan';
@@ -88,6 +89,7 @@ const ProductService = () => {
             toast.error(errorMessage);
         }
     };
+
 
     const handleBackToList = () => {
         setView('list');

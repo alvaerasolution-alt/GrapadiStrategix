@@ -26,11 +26,11 @@ const ProductServiceCreate = ({ onBack, onSuccess }) => {
         try {
             setIsLoadingBusinesses(true);
             const user = JSON.parse(localStorage.getItem('user'));
-            
-            const response = await backgroundApi.getAll({ 
-                user_id: user?.id 
+
+            const response = await backgroundApi.getAll({
+                user_id: user?.id
             });
-            
+
             if (response.data.status === 'success') {
                 setBusinesses(response.data.data || []);
             } else {
@@ -39,13 +39,13 @@ const ProductServiceCreate = ({ onBack, onSuccess }) => {
         } catch (error) {
             console.error('Error fetching businesses:', error);
             let errorMessage = 'Gagal memuat data bisnis';
-            
+
             if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;
             } else if (error.message) {
                 errorMessage = error.message;
             }
-            
+
             toast.error(errorMessage);
         } finally {
             setIsLoadingBusinesses(false);
@@ -58,23 +58,31 @@ const ProductServiceCreate = ({ onBack, onSuccess }) => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ 
-            ...prev, 
-            [name]: value 
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
         }));
     };
 
-    const handleFileChange = (e) => {
+    const handleFileChange = (e, options = {}) => {
         const file = e.target.files[0];
-        setFormData(prev => ({ 
-            ...prev, 
-            image_path: file 
-        }));
+        if (file) {
+            setFormData((prevData) => ({
+                ...prevData,
+                image_path: file,
+            }));
+
+            // Kalau silent = true, jangan munculkan toast lagi
+            if (!options.silent) {
+                toast.success('Gambar berhasil dipilih');
+            }
+        }
     };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         // Validasi: business background harus dipilih
         if (!formData.business_background_id) {
             toast.error('Pilih bisnis terlebih dahulu');
@@ -92,11 +100,17 @@ const ProductServiceCreate = ({ onBack, onSuccess }) => {
             return;
         }
 
+        // Validasi panjang nama
+        if (formData.name.trim().length > 255) {
+            toast.error('Nama produk/layanan maksimal 255 karakter');
+            return;
+        }
+
         setIsLoading(true);
 
         try {
             const user = JSON.parse(localStorage.getItem('user'));
-            
+
             if (!user || !user.id) {
                 throw new Error('User data not found. Please login again.');
             }
@@ -107,27 +121,32 @@ const ProductServiceCreate = ({ onBack, onSuccess }) => {
             submitData.append('type', formData.type);
             submitData.append('name', formData.name.trim());
             submitData.append('description', formData.description.trim());
-            
-            // Only append price if it has value
+            submitData.append('status', formData.status);
+
+            // Handle price - convert to number atau string kosong
             if (formData.price && formData.price !== '') {
                 submitData.append('price', parseFloat(formData.price));
+            } else {
+                submitData.append('price', '');
             }
-            
-            // Only append optional fields if they have values
-            if (formData.advantages) {
-                submitData.append('advantages', formData.advantages.trim());
-            }
-            
-            if (formData.development_strategy) {
-                submitData.append('development_strategy', formData.development_strategy.trim());
-            }
-            
-            submitData.append('status', formData.status);
-            
-            // Append file only if selected
-            if (formData.image_path) {
+
+            // Handle optional fields - selalu append meski kosong
+            submitData.append('advantages', formData.advantages?.trim() || '');
+            submitData.append('development_strategy', formData.development_strategy?.trim() || '');
+
+            // Append file hanya jika ada file
+            if (formData.image_path instanceof File) {
                 submitData.append('image_path', formData.image_path);
             }
+
+            console.log('Creating product with data:', {
+                user_id: user.id,
+                business_background_id: formData.business_background_id,
+                type: formData.type,
+                name: formData.name,
+                status: formData.status,
+                hasImage: !!formData.image_path
+            });
 
             const response = await productServiceApi.create(submitData);
 
@@ -139,21 +158,34 @@ const ProductServiceCreate = ({ onBack, onSuccess }) => {
             }
         } catch (error) {
             console.error('Error creating product/service:', error);
-            
+
             let errorMessage = 'Terjadi kesalahan saat membuat produk/layanan';
-            
-            if (error.response?.data?.message) {
+
+            if (error.response?.status === 403) {
+                errorMessage = 'Anda tidak memiliki izin untuk membuat data ini. Pastikan Anda login dengan benar.';
+            } else if (error.response?.status === 422) {
+                // Validation errors
+                if (error.response.data?.errors) {
+                    const errors = error.response.data.errors;
+                    const firstError = Object.values(errors)[0];
+                    errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+                } else if (error.response.data?.message) {
+                    errorMessage = error.response.data.message;
+                }
+            } else if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;
-            } else if (error.response?.data?.errors) {
-                // Handle validation errors
-                const errors = error.response.data.errors;
-                const firstError = Object.values(errors)[0];
-                errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
             } else if (error.message) {
                 errorMessage = error.message;
             }
-            
+
             toast.error(errorMessage);
+
+            // Debug info
+            console.log('Error details:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
         } finally {
             setIsLoading(false);
         }

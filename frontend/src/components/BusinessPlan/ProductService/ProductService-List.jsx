@@ -1,12 +1,12 @@
-import { Package, Plus, Eye, Edit3, Trash2, Loader, RefreshCw, X, DollarSign, Star, TrendingUp } from 'lucide-react';
+import { Package, Plus, Eye, Edit3, Trash2, Loader, RefreshCw, X, DollarSign, Star, TrendingUp, Building } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 
-const ProductServiceList = ({ 
-    products, 
-    onView, 
-    onEdit, 
-    onDelete, 
+const ProductServiceList = ({
+    products,
+    onView,
+    onEdit,
+    onDelete,
     onCreateNew,
     isLoading,
     error,
@@ -15,6 +15,8 @@ const ProductServiceList = ({
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [productToDelete, setProductToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [failedImages, setFailedImages] = useState(new Set());
+    const [selectedBusiness, setSelectedBusiness] = useState('all');
 
     const handleDeleteClick = (productId, productName) => {
         setProductToDelete({ id: productId, name: productName });
@@ -27,7 +29,7 @@ const ProductServiceList = ({
         setIsDeleting(true);
         try {
             await onDelete(productToDelete.id);
-            toast.success('Data produk/layanan berhasil dihapus!');
+            // hapus toast di sini, karena sudah ada di ProductService.jsx
         } catch (error) {
             toast.error('Gagal menghapus data produk/layanan!');
         } finally {
@@ -40,6 +42,54 @@ const ProductServiceList = ({
     const handleCancelDelete = () => {
         setShowDeleteModal(false);
         setProductToDelete(null);
+    };
+
+    // Handle image error
+    const handleImageError = (productId) => {
+        setFailedImages(prev => new Set(prev).add(productId));
+    };
+
+    // Get unique businesses for filter
+    const getUniqueBusinesses = () => {
+        const businesses = products
+            .filter(product => {
+                return product.business_background &&
+                    product.business_background.id &&
+                    (product.business_background.business_name || product.business_background.name);
+            })
+            .map(product => ({
+                id: product.business_background.id,
+                name: product.business_background.business_name || product.business_background.name,
+                category: product.business_background.category || 'Tidak ada kategori'
+            }));
+
+        // Remove duplicates
+        return businesses.filter((business, index, self) =>
+            index === self.findIndex(b => b.id === business.id)
+        );
+    };
+
+    const filteredProducts = selectedBusiness === 'all'
+        ? products
+        : products.filter(product =>
+            product.business_background?.id === selectedBusiness
+        );
+
+    const uniqueBusinesses = getUniqueBusinesses();
+
+    // Helper function untuk mengakses business background
+    const getBusinessInfo = (product) => {
+        if (!product.business_background) {
+            return {
+                name: `Bisnis (ID: ${product.business_background_id})`,
+                category: 'Tidak ada kategori'
+            };
+        }
+
+        return {
+            name: product.business_background.business_name || product.business_background.name || `Bisnis (ID: ${product.business_background_id})`,
+            category: product.business_background.category || 'Tidak ada kategori'
+        };
     };
 
     // Format currency
@@ -71,10 +121,25 @@ const ProductServiceList = ({
         return typeConfig[type] || typeConfig.product;
     };
 
+    // Get image URL - Menggunakan image_url dari backend yang sudah diperbaiki
+    const getImageUrl = (product) => {
+        // Prioritaskan image_url dari backend yang sudah include full URL
+        if (product.image_url) {
+            return product.image_url;
+        }
+
+        // Fallback ke path langsung jika image_url tidak ada
+        if (product.image_path) {
+            return `/storage/${product.image_path}`;
+        }
+
+        return null;
+    };
+
     if (isLoading) {
         return (
             <div className="space-y-6">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Produk & Layanan</h1>
                         <p className="text-gray-600 dark:text-gray-400">Kelola produk dan layanan bisnis Anda</p>
@@ -93,7 +158,7 @@ const ProductServiceList = ({
     if (error) {
         return (
             <div className="space-y-6">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Produk & Layanan</h1>
                         <p className="text-gray-600 dark:text-gray-400">Kelola produk dan layanan bisnis Anda</p>
@@ -172,7 +237,7 @@ const ProductServiceList = ({
                                 ) : (
                                     <>
                                         <Trash2 size={16} />
-                                        Delete
+                                        Hapus
                                     </>
                                 )}
                             </button>
@@ -182,19 +247,100 @@ const ProductServiceList = ({
             )}
 
             {/* HEADER */}
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Produk & Layanan</h1>
                     <p className="text-gray-600 dark:text-gray-400">Kelola produk dan layanan bisnis Anda</p>
                 </div>
                 <button
                     onClick={onCreateNew}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
                 >
                     <Plus size={20} />
                     Tambah Produk/Layanan
                 </button>
             </div>
+
+            {/* FILTER BUTTONS - Horizontal */}
+            {products.length > 0 && uniqueBusinesses.length > 0 && (
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+                        <h3 className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                            <Building size={16} />
+                            Filter Berdasarkan Bisnis:
+                        </h3>
+                        {selectedBusiness !== 'all' && (
+                            <button
+                                onClick={() => setSelectedBusiness('all')}
+                                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 w-full sm:w-auto text-left sm:text-center"
+                            >
+                                Reset Filter
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                        {/* Tombol Semua Bisnis */}
+                        <button
+                            onClick={() => setSelectedBusiness('all')}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${selectedBusiness === 'all'
+                                ? 'bg-green-500 border-green-500 text-white shadow-sm'
+                                : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                }`}
+                        >
+                            <Building size={14} />
+                            <span>Semua Bisnis</span>
+                            <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedBusiness === 'all'
+                                ? 'bg-green-600 text-white'
+                                : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                                }`}>
+                                {products.length}
+                            </span>
+                        </button>
+
+                        {/* Tombol untuk setiap bisnis */}
+                        {uniqueBusinesses.map(business => (
+                            <button
+                                key={business.id}
+                                onClick={() => setSelectedBusiness(business.id)}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${selectedBusiness === business.id
+                                    ? 'bg-blue-500 border-blue-500 text-white shadow-sm'
+                                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                    }`}
+                            >
+                                <Building size={14} />
+                                <div className="text-left">
+                                    <div className="font-medium">{business.name}</div>
+                                    <div className="text-xs opacity-80 hidden sm:block">{business.category}</div>
+                                </div>
+                                <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedBusiness === business.id
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                                    }`}>
+                                    {products.filter(p => p.business_background?.id === business.id).length}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Filter Info */}
+                    {selectedBusiness !== 'all' && (
+                        <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300 text-sm">
+                                    <Building size={16} />
+                                    <span>
+                                        Menampilkan {filteredProducts.length} dari {products.length} produk/layanan untuk{' '}
+                                        <strong>
+                                            {uniqueBusinesses.find(b => b.id === selectedBusiness)?.name}
+                                        </strong>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* LIST PRODUK/LAYANAN */}
             {products.length === 0 ? (
@@ -204,98 +350,154 @@ const ProductServiceList = ({
                     <p className="text-gray-600 dark:text-gray-400 mb-4">Mulai dengan menambahkan produk/layanan pertama Anda</p>
                     <button
                         onClick={onCreateNew}
-                        className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
+                        className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors w-full sm:w-auto"
                     >
                         Tambah Produk/Layanan Pertama
                     </button>
                 </div>
+            ) : filteredProducts.length === 0 ? (
+                <div className="text-center py-12">
+                    <Building size={64} className="mx-auto text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Tidak ada produk/layanan untuk bisnis ini</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">Tidak ditemukan produk/layanan untuk bisnis yang dipilih</p>
+                    <button
+                        onClick={() => setSelectedBusiness('all')}
+                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
+                    >
+                        Lihat Semua Produk/Layanan
+                    </button>
+                </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {products.map((product) => {
-                        const statusBadge = getStatusBadge(product.status);
-                        const typeBadge = getTypeBadge(product.type);
-                        
-                        return (
-                            <div key={product.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
-                                {/* Header dengan gambar */}
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg flex items-center justify-center border border-blue-200 dark:border-blue-800">
-                                            <Package className="text-blue-600 dark:text-blue-400" size={24} />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-1">
-                                                {product.name}
-                                            </h3>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <span className={`text-xs px-2 py-1 rounded ${typeBadge.color}`}>
-                                                    {typeBadge.label}
-                                                </span>
-                                                <span className={`text-xs px-2 py-1 rounded ${statusBadge.color}`}>
-                                                    {statusBadge.label}
-                                                </span>
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {filteredProducts.map((product) => {
+                            const statusBadge = getStatusBadge(product.status);
+                            const typeBadge = getTypeBadge(product.type);
+                            const imageUrl = getImageUrl(product);
+                            const hasImageFailed = failedImages.has(product.id);
+                            const businessInfo = getBusinessInfo(product);
+
+                            return (
+                                <div key={product.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
+                                    {/* Header dengan gambar */}
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg flex items-center justify-center border border-blue-200 dark:border-blue-800 overflow-hidden">
+                                                {imageUrl && !hasImageFailed ? (
+                                                    <img
+                                                        src={imageUrl}
+                                                        alt={product.name}
+                                                        className="w-full h-full object-cover"
+                                                        onError={() => handleImageError(product.id)}
+                                                        loading="lazy"
+                                                    />
+                                                ) : (
+                                                    <Package className="text-blue-600 dark:text-blue-400" size={24} />
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-1">
+                                                    {product.name}
+                                                </h3>
+                                                <div className="flex flex-wrap gap-1 mt-1">
+                                                    <span className={`text-xs px-2 py-1 rounded ${typeBadge.color}`}>
+                                                        {typeBadge.label}
+                                                    </span>
+                                                    <span className={`text-xs px-2 py-1 rounded ${statusBadge.color}`}>
+                                                        {statusBadge.label}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                
-                                {/* Deskripsi */}
-                                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4 min-h-[40px]">
-                                    {product.description}
-                                </p>
 
-                                {/* Harga */}
-                                {product.price && (
+                                    {/* Info Bisnis */}
+                                    <div className="mb-3">
+                                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                            <Building size={12} />
+                                            <span className="line-clamp-1">{businessInfo.name}</span>
+                                            <span className="hidden sm:inline">•</span>
+                                            <span className="hidden sm:inline">{businessInfo.category}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Deskripsi */}
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4 min-h-[40px]">
+                                        {product.description}
+                                    </p>
+
+                                    {/* Harga */}
                                     <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 mb-3">
-                                        <DollarSign size={16} className="text-green-600" />
-                                        <span className="font-semibold">{formatPrice(product.price)}</span>
+                                        <DollarSign size={16} className={`${product.price ? 'text-green-600' : 'text-gray-400'}`} />
+                                        <span className={`font-semibold ${!product.price && 'text-gray-500'}`}>
+                                            {formatPrice(product.price)}
+                                        </span>
                                     </div>
-                                )}
 
-                                {/* Keunggulan */}
-                                {product.advantages && (
-                                    <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                        <Star size={16} className="mt-0.5 flex-shrink-0 text-yellow-500" />
-                                        <span className="line-clamp-2">{product.advantages}</span>
+                                    {/* Keunggulan */}
+                                    {product.advantages && (
+                                        <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                            <Star size={16} className="mt-0.5 flex-shrink-0 text-yellow-500" />
+                                            <span className="line-clamp-2 flex-1">{product.advantages}</span>
+                                        </div>
+                                    )}
+
+                                    {/* Strategi Pengembangan */}
+                                    {product.development_strategy && (
+                                        <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                            <TrendingUp size={16} className="mt-0.5 flex-shrink-0 text-blue-500" />
+                                            <span className="line-clamp-2 flex-1">{product.development_strategy}</span>
+                                        </div>
+                                    )}
+
+                                    {/* Informasi Tambahan */}
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 mb-4 space-y-1">
+                                        <div>Dibuat: {new Date(product.created_at).toLocaleDateString('id-ID')}</div>
+                                        {product.updated_at !== product.created_at && (
+                                            <div>Diperbarui: {new Date(product.updated_at).toLocaleDateString('id-ID')}</div>
+                                        )}
                                     </div>
-                                )}
 
-                                {/* Strategi Pengembangan */}
-                                {product.development_strategy && (
-                                    <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                        <TrendingUp size={16} className="mt-0.5 flex-shrink-0 text-blue-500" />
-                                        <span className="line-clamp-2">{product.development_strategy}</span>
+                                    {/* Action Buttons */}
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => onView(product)}
+                                            className="flex-1 bg-blue-600 text-white py-2 px-2 rounded text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-1"
+                                            title="Lihat Detail"
+                                        >
+                                            <Eye size={14} />
+                                            <span className="hidden xs:inline">Lihat</span>
+                                        </button>
+                                        <button
+                                            onClick={() => onEdit(product)}
+                                            className="flex-1 bg-yellow-600 text-white py-2 px-2 rounded text-sm hover:bg-yellow-700 transition-colors flex items-center justify-center gap-1"
+                                            title="Edit"
+                                        >
+                                            <Edit3 size={14} />
+                                            <span className="hidden xs:inline">Edit</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteClick(product.id, product.name)}
+                                            className="flex-1 bg-red-600 text-white py-2 px-2 rounded text-sm hover:bg-red-700 transition-colors flex items-center justify-center gap-1"
+                                            title="Hapus"
+                                        >
+                                            <Trash2 size={14} />
+                                            <span className="hidden xs:inline">Hapus</span>
+                                        </button>
                                     </div>
-                                )}
-
-                                {/* Action Buttons */}
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => onView(product)}
-                                        className="flex-1 bg-blue-600 text-white py-2 px-3 rounded text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-1"
-                                    >
-                                        <Eye size={16} />
-                                        Lihat
-                                    </button>
-                                    <button
-                                        onClick={() => onEdit(product)}
-                                        className="flex-1 bg-yellow-600 text-white py-2 px-3 rounded text-sm hover:bg-yellow-700 transition-colors flex items-center justify-center gap-1"
-                                    >
-                                        <Edit3 size={16} />
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeleteClick(product.id, product.name)}
-                                        className="flex-1 bg-red-600 text-white py-2 px-3 rounded text-sm hover:bg-red-700 transition-colors flex items-center justify-center gap-1"
-                                    >
-                                        <Trash2 size={16} />
-                                        Delete
-                                    </button>
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Info Jumlah Data */}
+                    <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+                        Menampilkan {filteredProducts.length} dari {products.length} produk/layanan
+                        {selectedBusiness !== 'all' && (
+                            <span> untuk <strong>{uniqueBusinesses.find(b => b.id === selectedBusiness)?.name}</strong></span>
+                        )}
+                    </div>
+                </>
             )}
         </div>
     );
