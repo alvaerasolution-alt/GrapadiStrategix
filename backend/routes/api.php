@@ -62,6 +62,10 @@ Route::prefix('product-service')->group(function () {
     Route::post('/{id}', [ProductServiceController::class, 'update']); // POST untuk FormData
     Route::put('/{id}', [ProductServiceController::class, 'update']); // PUT untuk JSON
     Route::delete('/{id}', [ProductServiceController::class, 'destroy']);
+
+    // New endpoints untuk BMC alignment dan statistics
+    Route::post('/{id}/generate-bmc-alignment', [ProductServiceController::class, 'generateBmcAlignment']);
+    Route::get('/statistics/overview', [ProductServiceController::class, 'getStatistics']);
 });
 
 // Marketing Strategy
