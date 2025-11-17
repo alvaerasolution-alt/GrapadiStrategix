@@ -1,6 +1,9 @@
-import { Edit3, MapPin, Clock, Users, Truck, Workflow, Building, Calendar, Laptop, Settings } from 'lucide-react';
+import { Edit3, MapPin, Clock, Users, Truck, Workflow, Building, Calendar, Laptop, Settings, Eye, Download } from 'lucide-react';
+import { useState } from 'react';
 
 const OperationalPlanView = ({ plan, onBack, onEdit }) => {
+    const [showWorkflowDiagram, setShowWorkflowDiagram] = useState(false);
+
     if (!plan) {
         return (
             <div className="flex justify-center items-center h-64">
@@ -38,6 +41,135 @@ const OperationalPlanView = ({ plan, onBack, onEdit }) => {
 
     // Calculate total employees
     const totalEmployees = plan.employees ? plan.employees.reduce((sum, emp) => sum + (emp.quantity || 0), 0) : 0;
+
+    // Render Workflow Diagram
+    const renderWorkflowDiagram = () => {
+        if (!plan.workflow_diagram) {
+            return (
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 border-2 border-dashed border-gray-300 dark:border-gray-600">
+                    <div className="text-center">
+                        <Workflow className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                        <p className="text-gray-600 dark:text-gray-400">Belum ada workflow diagram</p>
+                        <p className="text-gray-500 dark:text-gray-500 text-sm mt-2">
+                            Generate diagram dari menu edit untuk melihat visualisasi alur kerja
+                        </p>
+                    </div>
+                </div>
+            );
+        }
+
+        const diagram = plan.workflow_diagram;
+
+        return (
+            <div className="space-y-4">
+                {/* Diagram Controls */}
+                <div className="flex justify-between items-center">
+                    <h4 className="font-semibold text-gray-900 dark:text-white">
+                        Workflow Diagram ({diagram.steps.length} steps)
+                    </h4>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setShowWorkflowDiagram(!showWorkflowDiagram)}
+                            className="flex items-center gap-2 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                        >
+                            <Eye size={14} />
+                            {showWorkflowDiagram ? 'Sembunyikan' : 'Tampilkan'}
+                        </button>
+                        <button className="flex items-center gap-2 px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700">
+                            <Download size={14} />
+                            Export
+                        </button>
+                    </div>
+                </div>
+
+                {showWorkflowDiagram && (
+                    <div className="space-y-4">
+                        {/* Visual Diagram Placeholder */}
+                        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-600">
+                            <div className="text-center">
+                                <Workflow className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+                                <p className="text-gray-700 dark:text-gray-300 font-medium mb-2">Workflow Diagram</p>
+                                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                                    Diagram interaktif akan ditampilkan di sini
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Steps List dengan Color Coding */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {diagram.steps.map((step, index) => (
+                                <div key={step.id} className={`p-3 rounded-lg border-l-4 ${
+                                    step.type === 'start' ? 'border-l-green-500 bg-green-50 dark:bg-green-900/20' :
+                                    step.type === 'end' ? 'border-l-red-500 bg-red-50 dark:bg-red-900/20' :
+                                    step.type === 'decision' ? 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' :
+                                    step.type === 'preparation' ? 'border-l-blue-500 bg-blue-50 dark:bg-blue-900/20' :
+                                    step.type === 'customer' ? 'border-l-purple-500 bg-purple-50 dark:bg-purple-900/20' :
+                                    'border-l-gray-500 bg-gray-50 dark:bg-gray-700/50'
+                                }`}>
+                                    <div className="flex items-start gap-3">
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                                            step.type === 'start' ? 'bg-green-500 text-white' :
+                                            step.type === 'end' ? 'bg-red-500 text-white' :
+                                            step.type === 'decision' ? 'bg-yellow-500 text-white' :
+                                            step.type === 'preparation' ? 'bg-blue-500 text-white' :
+                                            step.type === 'customer' ? 'bg-purple-500 text-white' :
+                                            'bg-gray-500 text-white'
+                                        }`}>
+                                            {step.number}
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                {step.description}
+                                            </p>
+                                            <div className="flex justify-between items-center mt-1">
+                                                <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                                                    {step.type}
+                                                </span>
+                                                {index < diagram.steps.length - 1 && (
+                                                    <span className="text-xs text-gray-400">→</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Legend */}
+                        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                            <h5 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Keterangan Diagram:</h5>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                                    <span>Start</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                                    <span>End</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                    <span>Decision</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                                    <span>Preparation</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                                    <span>Customer</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-gray-500"></div>
+                                    <span>Process</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     return (
         <div className="space-y-6">
@@ -94,6 +226,12 @@ const OperationalPlanView = ({ plan, onBack, onEdit }) => {
                                 <Calendar size={14} />
                                 Dibuat: {new Date(plan.created_at).toLocaleDateString('id-ID')}
                             </span>
+                            {plan.workflow_diagram && (
+                                <span className="bg-indigo-100 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-300 px-3 py-1 rounded-full flex items-center gap-1">
+                                    <Workflow size={14} />
+                                    Dengan Diagram
+                                </span>
+                            )}
                             <span className="bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300 px-3 py-1 rounded-full">
                                 {getStatusBadge(plan.status)}
                             </span>
@@ -254,6 +392,15 @@ const OperationalPlanView = ({ plan, onBack, onEdit }) => {
                         </div>
                     </div>
                 )}
+
+                {/* Workflow Diagram Section */}
+                <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <Workflow size={20} />
+                        Workflow Diagram
+                    </h3>
+                    {renderWorkflowDiagram()}
+                </div>
 
                 {/* Alur Kerja & Teknologi */}
                 <div className="space-y-6">

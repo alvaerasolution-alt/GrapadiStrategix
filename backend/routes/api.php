@@ -77,13 +77,18 @@ Route::prefix('marketing-strategy')->group(function () {
     Route::delete('/{id}', [MarketingStrategyController::class, 'destroy']);
 });
 
-// Operational Plan
+// Operational Plan Routes
 Route::prefix('operational-plan')->group(function () {
     Route::get('/', [OperationalPlanController::class, 'index']);
     Route::post('/', [OperationalPlanController::class, 'store']);
     Route::get('/{id}', [OperationalPlanController::class, 'show']);
     Route::put('/{id}', [OperationalPlanController::class, 'update']);
     Route::delete('/{id}', [OperationalPlanController::class, 'destroy']);
+
+    // New endpoints untuk workflow diagram
+    Route::post('/{id}/generate-workflow-diagram', [OperationalPlanController::class, 'generateWorkflowDiagram']);
+    Route::post('/{id}/upload-workflow-image', [OperationalPlanController::class, 'uploadWorkflowImage']);
+    Route::get('/statistics/overview', [OperationalPlanController::class, 'getStatistics']);
 });
 
 // Team Structure

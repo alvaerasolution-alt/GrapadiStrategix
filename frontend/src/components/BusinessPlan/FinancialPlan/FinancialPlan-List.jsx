@@ -512,7 +512,7 @@ const FinancialPlanList = ({
                     <p className="text-gray-600 dark:text-gray-400 mb-4">Mulai dengan membuat rencana keuangan pertama Anda</p>
                     <button
                         onClick={onCreateNew}
-                        className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors"
+                        className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors w-full sm:w-auto"
                     >
                         Buat Rencana Pertama
                     </button>

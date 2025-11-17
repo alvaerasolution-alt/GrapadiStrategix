@@ -29,7 +29,6 @@ const OperationalPlanCreate = ({ onBack, onSuccess }) => {
     const fetchBusinesses = async () => {
         try {
             setIsLoadingBusinesses(true);
-            const user = JSON.parse(localStorage.getItem('user'));
             const response = await backgroundApi.getAll();
             
             if (response.data.status === 'success') {
@@ -65,29 +64,31 @@ const OperationalPlanCreate = ({ onBack, onSuccess }) => {
         setFormData(prev => ({ ...prev, suppliers }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e, submitData = null) => {
         e.preventDefault();
         
+        const dataToSubmit = submitData || formData;
+
         // Validasi: business background harus dipilih
-        if (!formData.business_background_id) {
+        if (!dataToSubmit.business_background_id) {
             toast.error('Pilih bisnis terlebih dahulu');
             return;
         }
 
         // Validasi: lokasi bisnis harus diisi
-        if (!formData.business_location.trim()) {
+        if (!dataToSubmit.business_location.trim()) {
             toast.error('Lokasi bisnis wajib diisi');
             return;
         }
 
         // Validasi: tipe lokasi harus dipilih
-        if (!formData.location_type) {
+        if (!dataToSubmit.location_type) {
             toast.error('Tipe lokasi wajib dipilih');
             return;
         }
 
         // Validasi: alur kerja harian harus diisi
-        if (!formData.daily_workflow.trim()) {
+        if (!dataToSubmit.daily_workflow.trim()) {
             toast.error('Alur kerja harian wajib diisi');
             return;
         }
@@ -101,13 +102,13 @@ const OperationalPlanCreate = ({ onBack, onSuccess }) => {
                 throw new Error('User data not found');
             }
 
-            const submitData = {
-                ...formData,
+            const finalData = {
+                ...dataToSubmit,
                 user_id: user.id
             };
 
-            console.log('Submitting operational plan data:', submitData);
-            const response = await operationalPlanApi.create(submitData);
+            console.log('Creating operational plan data:', finalData);
+            const response = await operationalPlanApi.create(finalData);
 
             if (response.data.status === 'success') {
                 toast.success('Rencana operasional berhasil dibuat!');
@@ -134,8 +135,8 @@ const OperationalPlanCreate = ({ onBack, onSuccess }) => {
 
     return (
         <OperationalPlanForm
-            title="Tambah Rencana Operasional"
-            subtitle="Isi formulir untuk menambahkan rencana operasional baru"
+            title="Buat Rencana Operasional Baru"
+            subtitle="Isi informasi rencana operasional dengan workflow diagram"
             formData={formData}
             businesses={businesses}
             isLoadingBusinesses={isLoadingBusinesses}

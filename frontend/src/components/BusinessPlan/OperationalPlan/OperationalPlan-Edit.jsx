@@ -84,29 +84,31 @@ const OperationalPlanEdit = ({ plan, onBack, onSuccess }) => {
         setFormData(prev => ({ ...prev, suppliers }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e, submitData = null) => {
         e.preventDefault();
         
+        const dataToSubmit = submitData || formData;
+
         // Validasi: business background harus dipilih
-        if (!formData.business_background_id) {
+        if (!dataToSubmit.business_background_id) {
             toast.error('Pilih bisnis terlebih dahulu');
             return;
         }
 
         // Validasi: lokasi bisnis harus diisi
-        if (!formData.business_location.trim()) {
+        if (!dataToSubmit.business_location.trim()) {
             toast.error('Lokasi bisnis wajib diisi');
             return;
         }
 
         // Validasi: tipe lokasi harus dipilih
-        if (!formData.location_type) {
+        if (!dataToSubmit.location_type) {
             toast.error('Tipe lokasi wajib dipilih');
             return;
         }
 
         // Validasi: alur kerja harian harus diisi
-        if (!formData.daily_workflow.trim()) {
+        if (!dataToSubmit.daily_workflow.trim()) {
             toast.error('Alur kerja harian wajib diisi');
             return;
         }
@@ -120,13 +122,13 @@ const OperationalPlanEdit = ({ plan, onBack, onSuccess }) => {
                 throw new Error('User data not found');
             }
 
-            const submitData = {
-                ...formData,
+            const finalData = {
+                ...dataToSubmit,
                 user_id: user.id
             };
 
-            console.log('Updating operational plan data:', submitData);
-            const response = await operationalPlanApi.update(plan.id, submitData);
+            console.log('Updating operational plan data:', finalData);
+            const response = await operationalPlanApi.update(plan.id, finalData);
 
             if (response.data.status === 'success') {
                 toast.success('Rencana operasional berhasil diperbarui!');
@@ -176,6 +178,7 @@ const OperationalPlanEdit = ({ plan, onBack, onSuccess }) => {
             submitButtonText="Perbarui Rencana"
             submitButtonIcon={<Save size={16} />}
             mode="edit"
+            existingPlan={plan}
         />
     );
 };
