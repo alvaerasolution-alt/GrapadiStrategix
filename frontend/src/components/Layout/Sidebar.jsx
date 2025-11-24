@@ -16,6 +16,7 @@ import {
   FileChartColumnIncreasing,
   Users,
   BanknoteArrowUp,
+  Folder,
 } from "lucide-react";
 
 const Sidebar = ({
@@ -87,10 +88,18 @@ const Sidebar = ({
       ],
     },
     {
-      id: "financial-management",
+      id: "management-financial",
       label: "Manajemen Keuangan",
       icon: BanknoteArrowUp,
       description: "Kelola keuangan bisnis Anda",
+      subItems: [
+        {
+          id: "financial-categories",
+          label: "Kategori Keuangan",
+          icon: Folder,
+        },
+        // Tambahkan sub items lainnya nanti
+      ],
     },
     {
       id: "forecast",
@@ -120,9 +129,9 @@ const Sidebar = ({
     }
   };
 
-  const handleSubMenuClick = (subItemId, e) => {
+  const handleSubMenuClick = (subItemId, e, parentId) => {
     e.stopPropagation();
-    setActiveSection("business-plan"); // Set active section ke business-plan
+    setActiveSection(parentId); // Set active section ke parent menu
     setActiveSubSection(subItemId);
     if (isMobile) {
       onClose();
@@ -216,7 +225,6 @@ const Sidebar = ({
             const Icon = item.icon;
             const isActive = activeSection === item.id;
             const hasSubItems = item.subItems && item.subItems.length > 0;
-            const isBusinessPlanActive = activeSection === "business-plan";
             const hasActiveSubItem =
               hasSubItems && isAnySubItemActive(item.subItems);
 
@@ -296,9 +304,9 @@ const Sidebar = ({
                   )}
                 </button>
 
-                {/* Sub Menu Items - Show when business plan is active and sidebar is open */}
+                {/* Sub Menu Items - Show when parent is active and sidebar is open */}
                 {hasSubItems &&
-                  (isBusinessPlanActive || hasActiveSubItem) &&
+                  (isActive || hasActiveSubItem) &&
                   isOpen && (
                     <div className="ml-4 pl-3 border-l border-gray-200 dark:border-gray-600 space-y-1">
                       {item.subItems.map((subItem) => {
@@ -308,7 +316,7 @@ const Sidebar = ({
                         return (
                           <button
                             key={subItem.id}
-                            onClick={(e) => handleSubMenuClick(subItem.id, e)}
+                            onClick={(e) => handleSubMenuClick(subItem.id, e, item.id)}
                             className={`w-full flex items-center p-2 rounded-lg transition-all duration-200 group text-sm ${
                               isSubActive
                                 ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700"

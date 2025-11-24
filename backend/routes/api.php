@@ -10,6 +10,7 @@ use App\Http\Controllers\BusinessPlan\OperationalPlanController;
 use App\Http\Controllers\BusinessPlan\TeamStructureController;
 use App\Http\Controllers\BusinessPlan\FinancialPlanController;
 use App\Http\Controllers\BusinessPlan\PdfBusinessPlanController;
+use App\Http\Controllers\ManagementFinancial\ManagementFinancialController;
 use App\Http\Controllers\UserController;
 
 // =====================================
@@ -133,6 +134,22 @@ Route::middleware(['auth:sanctum', 'cors'])->group(function () {
         Route::post('/executive-summary', [PdfBusinessPlanController::class, 'generateExecutiveSummary']);
         Route::get('/statistics', [PdfBusinessPlanController::class, 'getPdfStatistics']);
     });
+
+    // Management Financial Routes
+    Route::prefix('management-financial')->group(function () {
+
+        // Financial Categories Routes
+        Route::prefix('categories')->group(function () {
+            Route::get('/', [ManagementFinancialController::class, 'indexCategories']);
+            Route::get('/summary', [ManagementFinancialController::class, 'getCategoriesSummary']);
+            Route::get('/{id}', [ManagementFinancialController::class, 'showCategory']);
+            Route::post('/', [ManagementFinancialController::class, 'storeCategory']);
+            Route::put('/{id}', [ManagementFinancialController::class, 'updateCategory']);
+            Route::delete('/{id}', [ManagementFinancialController::class, 'destroyCategory']);
+        });
+
+    });
+
 });
 
 // =====================================
