@@ -211,7 +211,7 @@ const CategoryList = ({
                 </div>
                 <button
                     onClick={onCreateNew}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
                 >
                     <Plus size={20} />
                     Tambah Kategori
@@ -261,7 +261,7 @@ const CategoryList = ({
                     <p className="text-gray-600 dark:text-gray-400 mb-4">Mulai dengan menambahkan kategori pertama Anda</p>
                     <button
                         onClick={onCreateNew}
-                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
                     >
                         Tambah Kategori Pertama
                     </button>
