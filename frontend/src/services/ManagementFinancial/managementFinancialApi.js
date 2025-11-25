@@ -15,6 +15,37 @@ export const managementFinancialApi = {
         })
     },
 
+    // Financial Simulations (NEW)
+    simulations: {
+        getAll: (params) => {
+            console.log('API Call: Getting all simulations with params:', params);
+            return api.get("/management-financial/simulations", { params });
+        },
+        getById: (id) => api.get(`/management-financial/simulations/${id}`),
+        create: (simulationData) => {
+            console.log('API Call: Creating simulation with data:', simulationData);
+            return api.post("/management-financial/simulations", simulationData);
+        },
+        update: (id, simulationData) => {
+            console.log('API Call: Updating simulation:', id, simulationData);
+            return api.put(`/management-financial/simulations/${id}`, simulationData);
+        },
+        delete: (id, userId) => {
+            console.log('API Call: Deleting simulation:', id, userId);
+            return api.delete(`/management-financial/simulations/${id}`, {
+                data: { user_id: userId }
+            });
+        },
+        getCashFlowSummary: (params) => {
+            console.log('API Call: Getting cash flow summary with params:', params);
+            return api.get("/management-financial/simulations/cash-flow-summary", { params });
+        },
+        getMonthlyComparison: (params) => {
+            console.log('API Call: Getting monthly comparison with params:', params);
+            return api.get("/management-financial/simulations/monthly-comparison", { params });
+        }
+    },
+
     // Financial Summaries (FIXED)
     summaries: {
         getAll: (params) => {
@@ -45,6 +76,7 @@ export const managementFinancialApi = {
             return api.get("/management-financial/summaries/monthly-comparison", { params });
         }
     }
+
 };
 
 export default managementFinancialApi;

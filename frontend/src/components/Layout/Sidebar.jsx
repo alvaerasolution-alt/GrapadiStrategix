@@ -18,6 +18,7 @@ import {
   BanknoteArrowUp,
   Folder,
   Calendar,
+  Wallet,
 } from "lucide-react";
 
 const Sidebar = ({
@@ -40,6 +41,7 @@ const Sidebar = ({
       icon: LayoutDashboard,
       description: "Ringkasan bisnis Anda",
     },
+
     {
       id: "business-plan",
       label: "Rencana Bisnis",
@@ -88,6 +90,7 @@ const Sidebar = ({
         },
       ],
     },
+
     {
       id: "management-financial",
       label: "Manajemen Keuangan",
@@ -100,6 +103,11 @@ const Sidebar = ({
           icon: Folder,
         },
         {
+          id: "financial-transactions",
+          label: "Transaksi Keuangan",
+          icon: Wallet,
+        },
+        {
           id: "financial-summaries",
           label: "Ringkasan Keuangan Bulanan",
           icon: Calendar,
@@ -107,6 +115,7 @@ const Sidebar = ({
         // Tambahkan sub items lainnya nanti
       ],
     },
+    
     {
       id: "forecast",
       label: "Forecast",
