@@ -91,4 +91,10 @@ class FinancialCategory extends Model
         // Add logic later to check if category has transactions
         return true;
     }
+
+    public function simulations()
+    {
+        return $this->hasMany(FinancialSimulation::class, 'financial_category_id');
+    }
+    
 }

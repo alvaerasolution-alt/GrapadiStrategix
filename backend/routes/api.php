@@ -12,6 +12,7 @@ use App\Http\Controllers\BusinessPlan\FinancialPlanController;
 use App\Http\Controllers\BusinessPlan\PdfBusinessPlanController;
 use App\Http\Controllers\ManagementFinancial\ManagementFinancialController;
 use App\Http\Controllers\ManagementFinancial\FinancialCategoryController;
+use App\Http\Controllers\ManagementFinancial\FinancialSimulationController;
 use App\Http\Controllers\ManagementFinancial\FinancialSummaryController;
 use App\Http\Controllers\UserController;
 
@@ -159,6 +160,17 @@ Route::middleware(['auth:sanctum', 'cors'])->group(function () {
             Route::post('/', [FinancialSummaryController::class, 'store']);
             Route::put('/{id}', [FinancialSummaryController::class, 'update']);
             Route::delete('/{id}', [FinancialSummaryController::class, 'destroy']);
+        });
+
+        // Financial Simulations Routes
+        Route::prefix('simulations')->group(function () {
+            Route::get('/', [FinancialSimulationController::class, 'index']);
+            Route::get('/cash-flow-summary', [FinancialSimulationController::class, 'getCashFlowSummary']);
+            Route::get('/monthly-comparison', [FinancialSimulationController::class, 'getMonthlyComparison']);
+            Route::get('/{id}', [FinancialSimulationController::class, 'show']);
+            Route::post('/', [FinancialSimulationController::class, 'store']);
+            Route::put('/{id}', [FinancialSimulationController::class, 'update']);
+            Route::delete('/{id}', [FinancialSimulationController::class, 'destroy']);
         });
 
     });
