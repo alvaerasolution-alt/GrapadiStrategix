@@ -449,10 +449,10 @@ class FinancialSimulationController extends Controller
 
             $business_background_id = $request->business_background_id;
             $year = (int) ($request->year ?? now()->year);
-            $month = (int) ($request->month ?? now()->month);
+            $month = $request->has('month') && $request->month ? (int) $request->month : null;
 
-            // Validate month and year
-            if ($month < 1 || $month > 12) {
+            // Validate month if provided
+            if ($month !== null && ($month < 1 || $month > 12)) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Bulan tidak valid'
@@ -460,53 +460,64 @@ class FinancialSimulationController extends Controller
             }
 
             // Total Income (completed)
-            $totalIncome = FinancialSimulation::where('user_id', $user_id)
+            $totalIncomeQuery = FinancialSimulation::where('user_id', $user_id)
                 ->where('business_background_id', $business_background_id)
                 ->where('type', 'income')
                 ->where('status', 'completed')
-                ->whereYear('simulation_date', $year)
-                ->whereMonth('simulation_date', $month)
-                ->sum('amount');
+                ->whereYear('simulation_date', $year);
+            if ($month) {
+                $totalIncomeQuery->whereMonth('simulation_date', $month);
+            }
+            $totalIncome = $totalIncomeQuery->sum('amount');
 
             // Total Expense (completed)
-            $totalExpense = FinancialSimulation::where('user_id', $user_id)
+            $totalExpenseQuery = FinancialSimulation::where('user_id', $user_id)
                 ->where('business_background_id', $business_background_id)
                 ->where('type', 'expense')
                 ->where('status', 'completed')
-                ->whereYear('simulation_date', $year)
-                ->whereMonth('simulation_date', $month)
-                ->sum('amount');
+                ->whereYear('simulation_date', $year);
+            if ($month) {
+                $totalExpenseQuery->whereMonth('simulation_date', $month);
+            }
+            $totalExpense = $totalExpenseQuery->sum('amount');
 
             // Planned Income
-            $plannedIncome = FinancialSimulation::where('user_id', $user_id)
+            $plannedIncomeQuery = FinancialSimulation::where('user_id', $user_id)
                 ->where('business_background_id', $business_background_id)
                 ->where('type', 'income')
                 ->where('status', 'planned')
-                ->whereYear('simulation_date', $year)
-                ->whereMonth('simulation_date', $month)
-                ->sum('amount');
+                ->whereYear('simulation_date', $year);
+            if ($month) {
+                $plannedIncomeQuery->whereMonth('simulation_date', $month);
+            }
+            $plannedIncome = $plannedIncomeQuery->sum('amount');
 
             // Planned Expense
-            $plannedExpense = FinancialSimulation::where('user_id', $user_id)
+            $plannedExpenseQuery = FinancialSimulation::where('user_id', $user_id)
                 ->where('business_background_id', $business_background_id)
                 ->where('type', 'expense')
                 ->where('status', 'planned')
-                ->whereYear('simulation_date', $year)
-                ->whereMonth('simulation_date', $month)
-                ->sum('amount');
+                ->whereYear('simulation_date', $year);
+            if ($month) {
+                $plannedExpenseQuery->whereMonth('simulation_date', $month);
+            }
+            $plannedExpense = $plannedExpenseQuery->sum('amount');
 
             // Net Cash Flow
             $netCashFlow = $totalIncome - $totalExpense;
             $projectedNetCashFlow = ($totalIncome + $plannedIncome) - ($totalExpense + $plannedExpense);
 
             // Category breakdown
-            $categoryBreakdown = FinancialSimulation::with(['category' => function ($query) {
+            $categoryBreakdownQuery = FinancialSimulation::with(['category' => function ($query) {
                 $query->select('id', 'name', 'type', 'color');
             }])
                 ->where('user_id', $user_id)
                 ->where('business_background_id', $business_background_id)
-                ->whereYear('simulation_date', $year)
-                ->whereMonth('simulation_date', $month)
+                ->whereYear('simulation_date', $year);
+            if ($month) {
+                $categoryBreakdownQuery->whereMonth('simulation_date', $month);
+            }
+            $categoryBreakdown = $categoryBreakdownQuery
                 ->selectRaw('type, financial_category_id, SUM(amount) as total_amount')
                 ->groupBy('type', 'financial_category_id')
                 ->get()
@@ -526,8 +537,8 @@ class FinancialSimulationController extends Controller
                     'category_breakdown' => $categoryBreakdown,
                     'period' => [
                         'year' => (int) $year,
-                        'month' => (int) $month,
-                        'month_name' => Carbon::create()->month($month)->monthName
+                        'month' => $month,
+                        'month_name' => $month ? Carbon::create()->month($month)->monthName : 'Tahunan'
                     ]
                 ]
             ], 200);

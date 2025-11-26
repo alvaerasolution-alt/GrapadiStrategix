@@ -232,6 +232,14 @@ class FinancialSimulation extends Model
     }
 
     /**
+     * Get month from simulation_date attribute
+     */
+    public function getMonthAttribute()
+    {
+        return $this->simulation_date ? $this->simulation_date->month : null;
+    }
+
+    /**
      * Check if simulation can be edited
      */
     public function getCanEditAttribute()
