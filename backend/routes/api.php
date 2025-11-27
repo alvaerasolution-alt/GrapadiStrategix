@@ -144,6 +144,11 @@ Route::middleware(['auth:sanctum', 'cors'])->group(function () {
         // Dashboard Stats
         Route::get('/dashboard-stats', [ManagementFinancialController::class, 'getDashboardStats']);
 
+        // Monthly Reports
+        Route::prefix('reports')->group(function () {
+            Route::get('/monthly', [\App\Http\Controllers\ManagementFinancial\MonthlyReportController::class, 'getMonthlyReport']);
+        });
+
         // Financial Categories Routes
         Route::prefix('categories')->group(function () {
             Route::get('/', [ManagementFinancialController::class, 'indexCategories']);

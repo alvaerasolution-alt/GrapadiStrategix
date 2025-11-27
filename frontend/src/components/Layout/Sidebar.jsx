@@ -112,6 +112,11 @@ const Sidebar = ({
           label: "Ringkasan Keuangan Bulanan",
           icon: Calendar,
         },
+        {
+          id: "monthly-reports",
+          label: "Laporan Bulanan",
+          icon: FileText,
+        },
         // Tambahkan sub items lainnya nanti
       ],
     },

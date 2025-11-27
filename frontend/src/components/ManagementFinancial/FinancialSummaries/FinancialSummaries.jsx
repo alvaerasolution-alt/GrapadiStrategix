@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import SummaryList from "./Summary-List";
 import SummaryView from "./Summary-View";
-import YearManager from "./Year-Manager";
+import YearDisplay from "./Year-Display";
 import { managementFinancialApi } from "../../../services/managementFinancial";
 import { toast } from "react-toastify";
 
@@ -85,55 +85,6 @@ const FinancialSummaries = ({ onBack, selectedBusiness }) => {
   useEffect(() => {
     fetchSummaries(selectedYear, selectedMonth);
   }, [selectedYear, selectedMonth, selectedBusiness]);
-
-  // Handler untuk year management
-  const handleAddYear = async (newYear) => {
-    if (!availableYears.includes(newYear)) {
-      const newYears = Array.from(new Set([newYear, ...availableYears])).sort((a, b) => b - a);
-      setAvailableYears(newYears);
-      setSelectedYear(newYear);
-
-      // Simpan ke localStorage untuk persistensi
-      const userYears = JSON.parse(localStorage.getItem("user_years") || "[]");
-      localStorage.setItem("user_years", JSON.stringify(Array.from(new Set([newYear, ...(userYears || [])]))));
-
-      // Refresh merged available years so summaries and simulations stay in sync
-      await fetchAvailableYears();
-
-      // Fetch summaries for the newly added year
-      await fetchSummaries(newYear);
-    }
-  };
-
-  const handleDeleteYear = async (yearToDelete) => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user"));
-
-      // Delete semua summary di tahun tersebut dari database
-      const summariesInYear = summaries.filter((s) => s.year === yearToDelete);
-      for (const summary of summariesInYear) {
-        await managementFinancialApi.summaries.delete(summary.id, user.id);
-      }
-
-      // Update available years
-      const newAvailableYears = availableYears.filter((year) => year !== yearToDelete);
-      setAvailableYears(newAvailableYears);
-
-      // Update selected year
-      const newSelectedYear = newAvailableYears.includes(currentYear) ? currentYear : newAvailableYears[0];
-      setSelectedYear(newSelectedYear);
-
-      // Update localStorage
-      localStorage.setItem("user_years", JSON.stringify(newAvailableYears));
-
-      // Refresh data
-      await fetchAvailableYears();
-      await fetchSummaries(newSelectedYear);
-    } catch (error) {
-      console.error("Error deleting year:", error);
-      throw error;
-    }
-  };
 
   const handleYearChange = (year) => {
     setSelectedYear(year);
@@ -366,8 +317,8 @@ const FinancialSummaries = ({ onBack, selectedBusiness }) => {
   return (
     <div className="min-h-screen py-6 bg-gray-50 dark:bg-gray-900">
       <div className="px-4 mx-auto space-y-6 max-w-7xl sm:px-6 lg:px-8">
-        {/* YearManager hanya untuk list view */}
-        {view === "list" && <YearManager availableYears={availableYears} selectedYear={selectedYear} onYearChange={handleYearChange} onAddYear={handleAddYear} onDeleteYear={handleDeleteYear} summaries={summaries} />}
+        {/* YearDisplay hanya untuk list view */}
+        {view === "list" && <YearDisplay availableYears={availableYears} selectedYear={selectedYear} onYearChange={handleYearChange} summaries={summaries} />}
 
         {renderView()}
       </div>
