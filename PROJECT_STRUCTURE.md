@@ -4,7 +4,6 @@
 
 ```
 SmartPlan-Web/
-├── ai-server/          # Python AI Services
 ├── backend/            # Laravel API Backend
 ├── frontend/           # React + Vite Frontend
 └── PROJECT_STRUCTURE.md # File dokumentasi ini
@@ -34,7 +33,8 @@ backend/
 │   │   │   └── ManagementFinancial/
 │   │   │       ├── ManagementFinancialController.php   # Financial Management
 │   │   │       ├── FinancialSimulationController.php   # Simulations
-│   │   │       └── FinancialSummaryController.php      # Financial Summaries
+│   │   │       ├── FinancialSummaryController.php      # Financial Summaries
+│   │   │       └── MonthlyReportController.php         # Monthly Reports (NEW)
 │   │   └── Middleware/
 │   │       └── CorsMiddleware.php                      # CORS Configuration
 │   │
@@ -103,12 +103,13 @@ backend/
 │   │   ├── 2025_11_13_073205_add_fields_to_users_table.php
 │   │   ├── 2025_11_23_233153_create_financial_categories_table.php
 │   │   ├── 2025_11_24_030540_create_financial_simulations_table.php
-│   │   └── 2025_11_25_004624_create_financial_summaries_table.php
+│   │   ├── 2025_11_25_004624_create_financial_summaries_table.php
+│   │   └── 2025_11_26_000000_add_year_to_financial_simulations_table.php
 │   │
 │   └── seeders/
 │       ├── BusinessBackgroundSeeder.php                # Business Data Seeds
 │       └── (Other seeders)
-│
+���
 ├── public/
 │   ├── index.php                                       # Entry Point
 │   ├── robots.txt                                      # SEO Robots
@@ -200,7 +201,23 @@ frontend/
 │   │   ├── ManagementFinancial/                        # Financial Management Components
 │   │   │   ├── FinancialCategories/
 │   │   │   ├── FinancialSimulation/
-│   │   │   └── FinancialSummaries/
+│   │   │   │   ├── Simulation-Dashboard.jsx            # Dashboard view
+│   │   │   │   ├── Simulation-List.jsx                 # List view
+│   │   │   │   ├── Simulation-Create.jsx               # Create form
+│   │   │   │   ├── Simulation-Edit.jsx                 # Edit form
+│   │   │   │   ├── Simulation-View.jsx                 # Detail view
+│   │   │   │   ├── Year-Management.jsx                 # Year CRUD management
+│   │   │   │   └── FinancialSimulation.jsx             # Main component
+│   │   │   ├── FinancialSummaries/
+│   │   │   │   ├── Summary-List.jsx                    # List view with KPI cards
+│   │   │   │   ├── Summary-View.jsx                    # Detail view
+│   │   │   │   ├── Summary-Chart.jsx                   # Chart visualization
+│   │   │   │   ├── Year-Display.jsx                    # Year selector (read-only)
+│   │   │   │   ├── FinancialSummaries.jsx              # Main component
+│   │   │   │   └── Year-Manager.jsx                    # (Deprecated - use Year-Display)
+│   │   │   └── MonthlyReports/
+│   │   │       ├── MonthlyReports.jsx                  # Monthly financial reports
+│   │   │       └── (Includes: Income Statement, Cash Flow, Balance Sheet, Trend Charts)
 │   │   │
 │   │   ├── Dashboard/                                  # Dashboard Components
 │   │   ├── Forecast/                                   # Forecasting Components
@@ -224,9 +241,15 @@ frontend/
 │   │   └── (Other pages)
 │   │
 │   ├── services/                                       # API & Services
-│   │   └── (API calls, utilities)
+│   │   ├── businessPlan/                               # Business Plan APIs
+│   │   ├── ManagementFinancial/
+│   │   │   ├── monthlyReportApi.js                     # Monthly Reports API
+│   │   │   └── (Other financial APIs)
+│   │   ├── authApi.js                                  # Authentication API
+│   │   └── userApi.js                                  # User API
 │   │
 │   └── utils/                                          # Utility Functions
+│       ├── chartCapture.js                             # Chart utilities
 │       └── (Helper functions)
 │
 ├── public/                                             # Public Static Files
@@ -252,26 +275,13 @@ frontend/
 
 ### 🧩 Frontend Component Structure:
 - **BusinessPlan Components**: Business Background, Financial Plan, Market Analysis, Marketing Strategy, Operational Plan, Product/Service, Team Structure, PDF Export
-- **ManagementFinancial Components**: Financial Categories, Financial Simulation, Financial Summaries
+- **ManagementFinancial Components**:
+  - **Financial Simulation**: Dashboard, List, Create, Edit, View, Year Management
+  - **Financial Summaries**: List with KPI cards, Detail view, Chart visualization, Year selector (read-only)
+  - **Monthly Reports**: Income Statement, Cash Flow, Balance Sheet, Trend Charts
 - **Dashboard Components**: Visualizations and summaries
 - **Layout Components**: Navigation, sidebar, headers
 - **Forecast Components**: Forecasting tools
-
----
-
-## 🤖 AI Server (Python)
-
-```
-ai-server/
-└── arima.py                                            # ARIMA Time Series Forecasting
-                                                        # Used for financial predictions
-                                                        # and data analysis
-```
-
-### Fungsi:
-- Time series forecasting menggunakan ARIMA
-- Prediksi finansial
-- Data analysis dan insights
 
 ---
 
@@ -293,13 +303,9 @@ ai-server/
 - **Build Tool**: Vite
 - **Styling**: Tailwind CSS
 - **State Management**: Context API (AuthContext)
+- **Charts**: Chart.js + react-chartjs-2
 - **Linting**: ESLint
 - **Language**: JavaScript (JSX)
-
-### AI/Data Science
-- **Language**: Python
-- **Libraries**: ARIMA (statsmodels)
-- **Purpose**: Time series forecasting
 
 ---
 
@@ -322,6 +328,33 @@ ai-server/
 - Team structure
 
 ### 3. Financial Management
+- **Financial Simulation**:
+  - Dashboard with cash flow summary
+  - Create, edit, view simulations
+  - Year management (add/delete years)
+  - Filter by type, status, category, year, month
+  - Quick stats and recent simulations
+  
+- **Financial Summaries**:
+  - Monthly financial summaries
+  - KPI cards (Total Income, Total Expense, Net Profit, Avg Monthly)
+  - Summary chart visualization
+  - Year selector (read-only, auto-synced from simulations)
+  - Month filter
+  - Generate summaries from simulations
+  - Helper card with summary information
+  
+- **Monthly Reports** (NEW):
+  - Laporan Laba Rugi Bulanan (Monthly Income Statement)
+  - Laporan Arus Kas Bulanan (Monthly Cash Flow)
+  - Neraca Sederhana (Simple Balance Sheet)
+  - Grafik Tren Bulanan (Monthly Trend Charts)
+  - KPI metrics cards
+  - Year filter (auto-synced from simulations)
+  - Print functionality
+  - Dark mode support
+  - Helper text for each report type
+
 - Financial plan creation
 - Financial categories
 - What-if simulations
@@ -365,12 +398,6 @@ npm run preview               # Preview production build
 npm run lint                  # Run ESLint
 ```
 
-### AI Server
-```bash
-cd ai-server
-python arima.py               # Run ARIMA forecasting
-```
-
 ---
 
 ## 📝 Database Relationships
@@ -384,10 +411,21 @@ Users (1)
 ├── Many: OperationalPlans
 ├── Many: ProductServices
 ├── Many: TeamStructures
-└── Many: FinancialSimulations
+├── Many: FinancialSimulations
+└── Many: FinancialSummaries
+
+BusinessBackground (1)
+├── Many: FinancialSimulations
+└── Many: FinancialSummaries
 
 FinancialPlan (1)
 ├── Many: FinancialSimulations
+└── Many: FinancialSummaries
+
+FinancialCategory (1)
+└── Many: FinancialSimulations
+
+FinancialSimulation (1)
 └── Many: FinancialSummaries
 ```
 
@@ -428,11 +466,54 @@ FinancialPlan (1)
 - `postcss` - CSS processing
 - `eslint` - Code linting
 - `vite` - Build tool
+- `chart.js` - Chart library
+- `react-chartjs-2` - React Chart.js wrapper
+- `react-toastify` - Toast notifications
+- `lucide-react` - Icon library
 
-### Python (AI Server)
-- `statsmodels` - ARIMA
-- `numpy` - Numerical computing
-- `pandas` - Data manipulation
+---
+
+## 🆕 Recent Updates (v1.1)
+
+### New Features Added:
+1. **Monthly Financial Reports Module**
+   - Laporan Laba Rugi Bulanan (Monthly Income Statement)
+   - Laporan Arus Kas Bulanan (Monthly Cash Flow)
+   - Neraca Sederhana (Simple Balance Sheet)
+   - Grafik Tren Bulanan (Monthly Trend Charts)
+   - KPI metrics cards
+   - Print functionality
+   - Dark mode support
+   - Helper text for each report type
+
+2. **Financial Summaries Improvements**
+   - Year selector now read-only (auto-synced from simulations)
+   - Removed CRUD year operations (add/delete)
+   - Helper card with summary information (Total Records, Tahun, Bulan Tercatat, Status)
+   - Moved helper card above KPI cards and charts
+
+3. **Financial Simulation Fixes**
+   - Fixed year initialization (default to 2025)
+   - Consistent year filtering across modules
+   - Year auto-sync between Simulation and Summaries
+
+### Backend API Endpoints:
+- `GET /api/management-financial/reports/monthly` - Get monthly financial reports
+- `GET /api/management-financial/summaries` - Get financial summaries
+- `GET /api/management-financial/simulations` - Get financial simulations
+- `GET /api/management-financial/simulations/available-years` - Get available years
+
+### Frontend Routes:
+- `/management-financial` - Main financial management page
+  - Tab: `simulations` - Financial Simulation
+  - Tab: `summaries` - Financial Summaries
+  - Tab: `monthly-reports` - Monthly Reports
+
+### Component Changes:
+- **Removed**: Year-Manager CRUD functionality from FinancialSummaries
+- **Added**: Year-Display component (read-only year selector)
+- **Updated**: MonthlyReports component with full feature set
+- **Fixed**: Year initialization in FinancialSimulation (2025 default)
 
 ---
 
@@ -446,4 +527,4 @@ FinancialPlan (1)
 ---
 
 *Generated on: 2025-11-26*
-*Last Updated: Dokumentasi Lengkap v1.0*
+*Last Updated: Dokumentasi Lengkap v1.1 - Monthly Reports & Improvements*
