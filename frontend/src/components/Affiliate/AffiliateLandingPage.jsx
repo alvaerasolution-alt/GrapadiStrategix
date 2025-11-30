@@ -195,79 +195,98 @@ const AffiliateLandingPage = () => {
     return (
         <div className="min-h-screen bg-white dark:bg-gray-950 transition-colors duration-200">
             {/* Hero Section */}
-            <div className="bg-gradient-to-br from-green-600 via-green-500 to-blue-600 dark:from-green-800 dark:via-green-700 dark:to-blue-800 text-white py-20 px-4">
-                <div className="max-w-5xl mx-auto">
-                    <div className="text-center mb-8">
-                        {/* Logo Section */}
-                        <div className="mb-6 flex justify-center">
-                            {businessData.logo_url ? (
-                                <div className="flex items-center justify-center overflow-hidden rounded-2xl transition-transform duration-200 hover:scale-105" style={{ maxWidth: "120px", maxHeight: "120px", filter: "drop-shadow(0 20px 25px rgba(0, 0, 0, 0.15)) drop-shadow(0 10px 10px rgba(0, 0, 0, 0.1))" }}>
-                                    <img
-                                        src={businessData.logo_url}
-                                        alt="Logo"
-                                        className="max-w-full max-h-full object-contain"
-                                        style={{ maxWidth: "100%", maxHeight: "100%", width: "auto", height: "auto" }}
-                                        onError={(e) => {
-                                            if (e.target) {
-                                                e.target.style.display = "none";
-                                                if (e.target.nextElementSibling) {
-                                                    e.target.nextElementSibling.style.display = "flex";
+            <div className="bg-gradient-to-br from-green-600 via-green-500 to-blue-600 dark:from-green-800 dark:via-green-700 dark:to-blue-800 text-white relative overflow-hidden">
+                {/* Background Image (if exists) */}
+                {businessData.background_image_url && (
+                    <div 
+                        className="absolute inset-0 z-0"
+                        style={{
+                            backgroundImage: `url('${businessData.background_image_url}')`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            backgroundAttachment: 'fixed'
+                        }}
+                    >
+                        {/* Dark overlay */}
+                        <div className="absolute inset-0 bg-black/50"></div>
+                    </div>
+                )}
+
+                {/* Content (relative z-index) */}
+                <div className="relative z-10 py-20 px-4">
+                    <div className="max-w-5xl mx-auto">
+                        <div className="text-center mb-8">
+                            {/* Logo Section */}
+                            <div className="mb-6 flex justify-center">
+                                {businessData.logo_url ? (
+                                    <div className="flex items-center justify-center overflow-hidden rounded-2xl transition-transform duration-200 hover:scale-105" style={{ maxWidth: "120px", maxHeight: "120px", filter: "drop-shadow(0 20px 25px rgba(0, 0, 0, 0.15)) drop-shadow(0 10px 10px rgba(0, 0, 0, 0.1))" }}>
+                                        <img
+                                            src={businessData.logo_url}
+                                            alt="Logo"
+                                            className="max-w-full max-h-full object-contain"
+                                            style={{ maxWidth: "100%", maxHeight: "100%", width: "auto", height: "auto" }}
+                                            onError={(e) => {
+                                                if (e.target) {
+                                                    e.target.style.display = "none";
+                                                    if (e.target.nextElementSibling) {
+                                                        e.target.nextElementSibling.style.display = "flex";
+                                                    }
                                                 }
-                                            }
-                                        }}
-                                    />
-                                    <div
-                                        className="w-24 h-24 flex items-center justify-center bg-gradient-to-br from-green-100 to-blue-100 rounded-2xl hidden"
-                                        style={{ display: "none" }}
-                                    >
-                                        <span className="text-2xl font-bold text-green-600">
+                                            }}
+                                        />
+                                        <div
+                                            className="w-24 h-24 flex items-center justify-center bg-gradient-to-br from-green-100 to-blue-100 rounded-2xl hidden"
+                                            style={{ display: "none" }}
+                                        >
+                                            <span className="text-2xl font-bold text-green-600">
+                                                {businessData.business_name?.charAt(0) || "K"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="w-24 h-24 rounded-3xl flex items-center justify-center" style={{ filter: "drop-shadow(0 20px 25px rgba(0, 0, 0, 0.15)) drop-shadow(0 10px 10px rgba(0, 0, 0, 0.1))", background: "linear-gradient(135deg, #10b981 0%, #3b82f6 100%)" }}>
+                                        <span className="text-4xl font-bold text-white">
                                             {businessData.business_name?.charAt(0) || "K"}
                                         </span>
                                     </div>
+                                )}
+                            </div>
+
+                            {/* Title & Subtitle */}
+                            <h1 className="text-4xl md:text-5xl font-bold mb-3">
+                                {businessData.business_name}
+                            </h1>
+                            {businessData.category && (
+                                <div className="inline-block px-4 py-1 bg-green-200 dark:bg-green-900 text-green-900 dark:text-green-100 rounded-full text-sm font-medium mb-4">
+                                    {businessData.category}
                                 </div>
-                            ) : (
-                                <div className="w-24 h-24 rounded-3xl flex items-center justify-center" style={{ filter: "drop-shadow(0 20px 25px rgba(0, 0, 0, 0.15)) drop-shadow(0 10px 10px rgba(0, 0, 0, 0.1))", background: "linear-gradient(135deg, #10b981 0%, #3b82f6 100%)" }}>
-                                    <span className="text-4xl font-bold text-white">
-                                        {businessData.business_name?.charAt(0) || "K"}
-                                    </span>
+                            )}
+                            <p className="text-xl text-green-50 mb-4 max-w-2xl mx-auto leading-relaxed">
+                                {businessData.description}
+                            </p>
+                            {businessData.location && (
+                                <div className="flex items-center justify-center gap-2 text-green-100">
+                                    <MapPin className="w-5 h-5" />
+                                    <span className="text-sm">{businessData.location}</span>
+                                </div>
+                            )}
+
+                            {/* WhatsApp CTA Button */}
+                            {businessData.whatsapp && (
+                                <div className="mt-8 flex justify-center">
+                                    <a
+                                        href={`https://wa.me/${businessData.whatsapp.replace(/\D/g, "")}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-3 px-8 py-4 bg-white text-green-600 font-bold rounded-full shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-200 hover:bg-gray-50"
+                                    >
+                                        <Phone className="w-6 h-6" />
+                                        <span>Hubungi via WhatsApp</span>
+                                        <ArrowRight className="w-5 h-5" />
+                                    </a>
                                 </div>
                             )}
                         </div>
-
-                        {/* Title & Subtitle */}
-                        <h1 className="text-4xl md:text-5xl font-bold mb-3">
-                            {businessData.business_name}
-                        </h1>
-                        {businessData.category && (
-                            <div className="inline-block px-4 py-1 bg-green-200 dark:bg-green-900 text-green-900 dark:text-green-100 rounded-full text-sm font-medium mb-4">
-                                {businessData.category}
-                            </div>
-                        )}
-                        <p className="text-xl text-green-50 mb-4 max-w-2xl mx-auto leading-relaxed">
-                            {businessData.description}
-                        </p>
-                        {businessData.location && (
-                            <div className="flex items-center justify-center gap-2 text-green-100">
-                                <MapPin className="w-5 h-5" />
-                                <span className="text-sm">{businessData.location}</span>
-                            </div>
-                        )}
-
-                        {/* WhatsApp CTA Button */}
-                        {businessData.whatsapp && (
-                            <div className="mt-8 flex justify-center">
-                                <a
-                                    href={`https://wa.me/${businessData.whatsapp.replace(/\D/g, "")}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-3 px-8 py-4 bg-white text-green-600 font-bold rounded-full shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-200 hover:bg-gray-50"
-                                >
-                                    <Phone className="w-6 h-6" />
-                                    <span>Hubungi via WhatsApp</span>
-                                    <ArrowRight className="w-5 h-5" />
-                                </a>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>

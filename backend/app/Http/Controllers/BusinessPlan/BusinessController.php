@@ -121,6 +121,7 @@ class BusinessController extends Controller
         $validator = Validator::make($request->all(), [
             'user_id' => 'required|exists:users,id',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'name' => 'required|string|max:255',
             'category' => 'required|string|max:100',
             'description' => 'required|string',
@@ -162,9 +163,18 @@ class BusinessController extends Controller
                 }
             }
 
+            $backgroundPath = null;
+            if ($request->hasFile('background_image')) {
+                $backgroundFile = $request->file('background_image');
+                $filename = 'background_' . time() . '_' . uniqid() . '.' . $backgroundFile->getClientOriginalExtension();
+                $backgroundPath = 'backgrounds/' . $filename;
+                Storage::disk('public')->put($backgroundPath, file_get_contents($backgroundFile->getRealPath()));
+            }
+
             $business = BusinessBackground::create([
                 'user_id' => $request->user_id,
                 'logo' => $logoPath,
+                'background_image' => $backgroundPath,
                 'name' => $request->name,
                 'category' => $request->category,
                 'description' => $request->description,
@@ -213,6 +223,7 @@ class BusinessController extends Controller
 
         $validated = $request->validate([
             'logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'background_image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:5120',
             'name' => 'required|string|max:255',
             'category' => 'required|string|max:255',
             'description' => 'required|string',
@@ -224,6 +235,7 @@ class BusinessController extends Controller
             'vision' => 'nullable|string',
             'mission' => 'nullable|string',
             'contact' => 'nullable|string',
+            'user_id' => 'nullable|integer', // Add user_id as nullable for validation
         ]);
 
         try {
@@ -247,7 +259,7 @@ class BusinessController extends Controller
                 if ($business->logo) {
                     Storage::disk('public')->delete($business->logo);
                 }
-            } elseif ($request->has('logo') && $request->logo === '') {
+            } elseif ($request->has('logo') && $request->input('logo') === '') {
                 // Jika logo dikirim sebagai string kosong, hapus logo
                 if ($business->logo) {
                     Storage::disk('public')->delete($business->logo);
@@ -257,6 +269,32 @@ class BusinessController extends Controller
                 // Jika tidak ada perubahan logo, pertahankan logo lama
                 unset($validated['logo']);
             }
+
+            // Handle background_image update
+            if ($request->hasFile('background_image')) {
+                $backgroundFile = $request->file('background_image');
+                $filename = 'background_' . time() . '_' . uniqid() . '.' . $backgroundFile->getClientOriginalExtension();
+                $path = 'backgrounds/' . $filename;
+                Storage::disk('public')->put($path, file_get_contents($backgroundFile->getRealPath()));
+                $validated['background_image'] = $path;
+
+                // Hapus background lama jika ada
+                if ($business->background_image) {
+                    Storage::disk('public')->delete($business->background_image);
+                }
+            } elseif ($request->has('background_image') && $request->input('background_image') === '') {
+                // Jika background_image dikirim sebagai string kosong, hapus background
+                if ($business->background_image) {
+                    Storage::disk('public')->delete($business->background_image);
+                }
+                $validated['background_image'] = null;
+            } else {
+                // Jika tidak ada perubahan background_image, pertahankan background lama
+                unset($validated['background_image']);
+            }
+
+            // Remove user_id from validated data before update
+            unset($validated['user_id']);
 
             $business->update($validated);
 
@@ -289,6 +327,11 @@ class BusinessController extends Controller
             // Hapus logo jika ada
             if ($business->logo) {
                 Storage::disk('public')->delete($business->logo);
+            }
+
+            // Hapus background_image jika ada
+            if ($business->background_image) {
+                Storage::disk('public')->delete($business->background_image);
             }
 
             $business->delete();

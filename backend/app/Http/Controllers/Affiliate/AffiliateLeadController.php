@@ -102,6 +102,19 @@ class AffiliateLeadController extends Controller
             }
         }
 
+        // Prepare background image URL
+        $backgroundImagePath = $businessBackground?->background_image ?? null;
+        $backgroundImageUrl = null;
+        if ($backgroundImagePath) {
+            // Check if background image is already a full URL
+            if (filter_var($backgroundImagePath, FILTER_VALIDATE_URL)) {
+                $backgroundImageUrl = $backgroundImagePath;
+            } else {
+                // Convert relative path to full URL
+                $backgroundImageUrl = asset('storage/' . $backgroundImagePath);
+            }
+        }
+
         // Prepare response data
         return response()->json([
             'success' => true,
@@ -111,6 +124,7 @@ class AffiliateLeadController extends Controller
                 'description' => $businessBackground?->description ?? $user->business_description ?? 'Kami menyediakan solusi terbaik untuk kebutuhan bisnis Anda',
                 'category' => $businessBackground?->category ?? 'Umum',
                 'logo_url' => $logoUrl,
+                'background_image_url' => $backgroundImageUrl,
                 'vision' => $businessBackground?->vision ?? null,
                 'mission' => $businessBackground?->mission ?? null,
                 'values' => $businessBackground?->values ? json_decode($businessBackground->values, true) : [],

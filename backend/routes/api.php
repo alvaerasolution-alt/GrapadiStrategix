@@ -55,6 +55,7 @@ Route::middleware(['auth:sanctum', 'cors'])->group(function () {
     // Business Background
     Route::prefix('business-background')->group(function () {
         Route::post('/', [BusinessController::class, 'store']);
+        Route::post('/{id}', [BusinessController::class, 'update']); // For FormData with _method=PUT
         Route::get('/', [BusinessController::class, 'index']);
         Route::get('/{id}', [BusinessController::class, 'show']);
         Route::put('/{id}', [BusinessController::class, 'update']);
