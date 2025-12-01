@@ -14,6 +14,7 @@ use App\Http\Controllers\ManagementFinancial\ManagementFinancialController;
 use App\Http\Controllers\ManagementFinancial\FinancialCategoryController;
 use App\Http\Controllers\ManagementFinancial\FinancialSimulationController;
 use App\Http\Controllers\ManagementFinancial\FinancialSummaryController;
+use App\Http\Controllers\ManagementFinancial\PdfFinancialReportController;
 use App\Http\Controllers\Forecast\ForecastDataController;
 use App\Http\Controllers\Forecast\ForecastResultController;
 use App\Http\Controllers\Affiliate\AffiliateLinkController;
@@ -189,7 +190,22 @@ Route::middleware(['auth:sanctum', 'cors'])->group(function () {
             Route::delete('/{id}', [FinancialSimulationController::class, 'destroy']);
         });
 
-        // Forecast Routes (NEW)
+        // Financial Projections Routes
+        Route::prefix('projections')->group(function () {
+            Route::get('/baseline', [\App\Http\Controllers\ManagementFinancial\FinancialProjectionController::class, 'getBaselineData']);
+            Route::get('/', [\App\Http\Controllers\ManagementFinancial\FinancialProjectionController::class, 'index']);
+            Route::get('/{id}', [\App\Http\Controllers\ManagementFinancial\FinancialProjectionController::class, 'show']);
+            Route::post('/', [\App\Http\Controllers\ManagementFinancial\FinancialProjectionController::class, 'store']);
+            Route::delete('/{id}', [\App\Http\Controllers\ManagementFinancial\FinancialProjectionController::class, 'destroy']);
+        });
+
+        // Financial Report PDF Routes
+        Route::prefix('pdf')->group(function () {
+            Route::post('/generate', [\App\Http\Controllers\ManagementFinancial\PdfFinancialReportController::class, 'generatePdf']);
+            Route::get('/statistics', [\App\Http\Controllers\ManagementFinancial\PdfFinancialReportController::class, 'getStatistics']);
+        });
+
+        // Forecast Routes
         Route::prefix('forecast')->group(function () {
             Route::get('/available-years', [ForecastResultController::class, 'getAvailableYears']);
             Route::get('/simulation-years', [ForecastDataController::class, 'getAvailableSimulationYears']);
