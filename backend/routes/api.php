@@ -192,6 +192,9 @@ Route::middleware(['auth:sanctum', 'cors'])->group(function () {
         // Forecast Routes (NEW)
         Route::prefix('forecast')->group(function () {
             Route::get('/available-years', [ForecastResultController::class, 'getAvailableYears']);
+            Route::get('/simulation-years', [ForecastDataController::class, 'getAvailableSimulationYears']);
+            Route::post('/import-from-simulation', [ForecastDataController::class, 'importFromFinancialSimulation']);
+            Route::post('/generate-from-simulation', [ForecastDataController::class, 'generateFromSimulation']);
             Route::get('/', [ForecastDataController::class, 'index']);
             Route::post('/', [ForecastDataController::class, 'store']);
             Route::get('/{forecastData}', [ForecastDataController::class, 'show']);

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, DollarSign, Percent, AlertCircle, Download } from 'lucide-react';
+import { TrendingUp, DollarSign, AlertCircle, Download } from 'lucide-react';
 import ForecastList from './Forecast-List';
-import ForecastCreate from './Forecast-Create';
 import ForecastView from './Forecast-View';
+import ForecastResults from './Forecast-Results';
 
 const Forecast = ({ activeSubSection, setActiveSubSection }) => {
     const [view, setView] = useState('main');
-    const [selectedForecast, setSelectedForecast] = useState(null);
+    const [selectedForecastData, setSelectedForecastData] = useState(null);
+    const [selectedGeneratedForecast, setSelectedGeneratedForecast] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);
 
     useEffect(() => {
@@ -32,9 +33,10 @@ const Forecast = ({ activeSubSection, setActiveSubSection }) => {
         setRefreshKey((prev) => prev + 1);
     };
 
-    const handleViewForecast = (forecast) => {
-        setSelectedForecast(forecast);
-        setView('view');
+    const handleViewGeneratedForecast = (forecastData, generatedResults) => {
+        setSelectedForecastData(forecastData);
+        setSelectedGeneratedForecast(generatedResults);
+        setView('view-results');
     };
 
     const renderMainView = () => (
@@ -95,28 +97,6 @@ const Forecast = ({ activeSubSection, setActiveSubSection }) => {
                     </div>
                 </div>
 
-                {/* Forecast Results Card */}
-                <div
-                    className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group hover:border-purple-300 dark:hover:border-purple-600"
-                    onClick={() => handleSubSectionClick('buat-forecast')}
-                >
-                    <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                        <Percent className="text-purple-600 dark:text-purple-400" size={24} />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                        Buat Forecast Baru
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                        Input data keuangan baru untuk menghasilkan prediksi pendapatan dan pengeluaran
-                    </p>
-                    <div className="flex items-center text-purple-600 dark:text-purple-400 text-sm font-medium">
-                        <span>Buat Sekarang</span>
-                        <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </div>
-
                 {/* Hasil Forecast Card */}
                 <div
                     className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group hover:border-orange-300 dark:hover:border-orange-600"
@@ -170,31 +150,20 @@ const Forecast = ({ activeSubSection, setActiveSubSection }) => {
                 {view === 'daftar-forecast' && (
                     <ForecastList
                         key={refreshKey}
-                        onViewForecast={handleViewForecast}
+                        onViewGeneratedForecast={handleViewGeneratedForecast}
                         onCreateNew={() => handleSubSectionClick('buat-forecast')}
                         onBack={handleBackToMain}
                     />
                 )}
-                {view === 'buat-forecast' && (
-                    <ForecastCreate
-                        onSuccess={handleCreateSuccess}
-                        onCancel={handleBackToMain}
-                    />
-                )}
-                {view === 'view' && selectedForecast && (
+                {view === 'view-results' && selectedForecastData && selectedGeneratedForecast && (
                     <ForecastView
-                        forecast={selectedForecast}
+                        forecastData={selectedForecastData}
+                        generatedResults={selectedGeneratedForecast}
                         onBack={handleBackToMain}
-                        onRefresh={() => setRefreshKey((prev) => prev + 1)}
                     />
                 )}
                 {view === 'hasil-forecast' && (
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                        <button onClick={handleBackToMain} className="mb-6 flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
-                            ← Kembali
-                        </button>
-                        <p className="text-gray-600 dark:text-gray-400">Pilih forecast dari daftar untuk melihat hasil prediksi dan insights secara detail.</p>
-                    </div>
+                    <ForecastResults onBack={handleBackToMain} />
                 )}
             </div>
         </div>

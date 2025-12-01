@@ -81,10 +81,51 @@ export const forecastDataApi = {
             throw error.response?.data || error;
         }
     },
+
+    /**
+     * Import forecast data from Financial Simulation by year
+     */
+    importFromSimulation: async (year, month = null) => {
+        try {
+            const data = { year };
+            if (month) data.month = month;
+            const response = await apiClient.post('/import-from-simulation', data);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
+    },
+
+    /**
+     * Get available years from Financial Simulation
+     */
+    getSimulationYears: async () => {
+        try {
+            const response = await apiClient.get('/simulation-years');
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
+    },
 };
 
 // Forecast Results & Generation
 export const forecastResultsApi = {
+    /**
+     * Generate forecast directly from financial simulation
+     */
+    generateFromSimulation: async (simulationId, options = {}) => {
+        try {
+            const response = await apiClient.post('/generate-from-simulation', {
+                financial_simulation_id: simulationId,
+                ...options,
+            });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
+    },
+
     /**
      * Generate forecast untuk forecast data tertentu
      */

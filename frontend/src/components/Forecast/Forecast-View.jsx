@@ -1,60 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { AlertCircle, Loader, TrendingUp, TrendingDown, AlertTriangle, Zap, DollarSign, Percent } from 'lucide-react';
-import { forecastResultsApi } from '../../services/ManagementFinancial/forecastApi';
+import { AlertCircle, TrendingUp, TrendingDown, AlertTriangle, Zap, DollarSign, Percent } from 'lucide-react';
 
-const ForecastView = ({ forecast, onBack }) => {
+const ForecastView = ({ forecastData, generatedResults, onBack }) => {
     const [results, setResults] = useState(null);
     const [insights, setInsights] = useState([]);
     const [annualSummary, setAnnualSummary] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [generateLoading, setGenerateLoading] = useState(false);
-    const [method, setMethod] = useState('arima');
-    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('results');
 
     useEffect(() => {
-        loadResults();
-    }, [forecast]);
-
-    const loadResults = async () => {
-        try {
-            setLoading(true);
-            const response = await forecastResultsApi.getResults(forecast.id);
-            if (response.success && response.data.results.length > 0) {
-                setResults(response.data.results);
-                setInsights(response.data.insights);
-                setAnnualSummary(response.data.annual_summary);
-            }
-        } catch (err) {
-            console.error('Error loading results:', err);
-        } finally {
-            setLoading(false);
+        if (generatedResults) {
+            setResults(generatedResults.results || []);
+            setInsights(generatedResults.insights || []);
+            setAnnualSummary(generatedResults.annual_summary || null);
         }
-    };
-
-    const handleGenerateForecast = async () => {
-        try {
-            setGenerateLoading(true);
-            setError('');
-            const response = await forecastResultsApi.generate(forecast.id, {
-                method: method,
-                forecast_months: 12,
-            });
-
-            if (response.success) {
-                setResults(response.data.results);
-                setInsights(response.data.insights);
-                setAnnualSummary(response.data.annual_summary);
-            } else {
-                setError(response.message || 'Gagal membuat forecast');
-            }
-        } catch (err) {
-            setError(err.message || 'Terjadi kesalahan saat membuat forecast');
-        } finally {
-            setGenerateLoading(false);
-        }
-    };
+    }, [generatedResults]);
 
     const getSeverityColor = (severity) => {
         switch (severity) {
@@ -88,10 +49,10 @@ const ForecastView = ({ forecast, onBack }) => {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                        Detail Forecast - {forecast.year}
+                        Detail Forecast - Tahun {forecastData.year} Bulan {forecastData.month}
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400">
-                        Data dari Bulan {forecast.month} {forecast.year}
+                        Data historis: Pendapatan Rp {parseFloat(forecastData.income_sales).toLocaleString('id-ID')} | Pengeluaran Rp {parseFloat(forecastData.expense_operational).toLocaleString('id-ID')}
                     </p>
                 </div>
                 <button
@@ -102,53 +63,15 @@ const ForecastView = ({ forecast, onBack }) => {
                 </button>
             </div>
 
-            {error && (
-                <div className="flex gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                    <AlertCircle className="text-red-600 dark:text-red-400 flex-shrink-0" size={20} />
-                    <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
+            {/* Loading State */}
+            {loading && (
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+                    <p className="text-gray-600 dark:text-gray-400">Memuat hasil forecast...</p>
                 </div>
             )}
 
-            {/* Generate Section */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex flex-col md:flex-row md:items-center gap-4">
-                    <div className="flex-1">
-                        <label htmlFor="method" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Pilih Metode Forecast:
-                        </label>
-                        <select
-                            id="method"
-                            value={method}
-                            onChange={(e) => setMethod(e.target.value)}
-                            disabled={generateLoading}
-                            className="w-full md:w-auto px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                            <option value="arima">ARIMA (Recommended)</option>
-                            <option value="exponential_smoothing">Exponential Smoothing</option>
-                            <option value="manual">Manual</option>
-                        </select>
-                    </div>
-                    <button
-                        onClick={handleGenerateForecast}
-                        disabled={generateLoading}
-                        className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors duration-200 font-medium"
-                    >
-                        {generateLoading ? (
-                            <>
-                                <Loader size={18} className="animate-spin" />
-                                Generating...
-                            </>
-                        ) : (
-                            <>
-                                <TrendingUp size={18} />
-                                Generate Forecast
-                            </>
-                        )}
-                    </button>
-                </div>
-            </div>
-
             {/* Tabs */}
+            {!loading && (
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div className="flex border-b border-gray-200 dark:border-gray-700">
                     <button
@@ -277,13 +200,13 @@ const ForecastView = ({ forecast, onBack }) => {
                                                 {results.map((result, idx) => (
                                                     <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                                         <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{result.month}</td>
-                                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">Rp {result.forecast_income.toLocaleString('id-ID')}</td>
-                                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">Rp {result.forecast_expense.toLocaleString('id-ID')}</td>
-                                                        <td className={`px-6 py-4 text-sm font-medium ${result.forecast_profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                                                            Rp {result.forecast_profit.toLocaleString('id-ID')}
+                                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">Rp {parseFloat(result.forecast_income).toLocaleString('id-ID')}</td>
+                                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">Rp {parseFloat(result.forecast_expense).toLocaleString('id-ID')}</td>
+                                                        <td className={`px-6 py-4 text-sm font-medium ${parseFloat(result.forecast_profit) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                                            Rp {parseFloat(result.forecast_profit).toLocaleString('id-ID')}
                                                         </td>
-                                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{result.forecast_margin.toFixed(2)}%</td>
-                                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{result.confidence_level.toFixed(2)}%</td>
+                                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{parseFloat(result.forecast_margin).toFixed(2)}%</td>
+                                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{parseFloat(result.confidence_level).toFixed(2)}%</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -327,7 +250,7 @@ const ForecastView = ({ forecast, onBack }) => {
                                             <p className="text-blue-100">Total Pendapatan Tahunan</p>
                                         </div>
                                         <p className="text-3xl font-bold">
-                                            Rp {annualSummary.total_income.toLocaleString('id-ID')}
+                                            Rp {parseFloat(annualSummary.total_income).toLocaleString('id-ID')}
                                         </p>
                                     </div>
 
@@ -337,7 +260,7 @@ const ForecastView = ({ forecast, onBack }) => {
                                             <p className="text-red-100">Total Pengeluaran Tahunan</p>
                                         </div>
                                         <p className="text-3xl font-bold">
-                                            Rp {annualSummary.total_expense.toLocaleString('id-ID')}
+                                            Rp {parseFloat(annualSummary.total_expense).toLocaleString('id-ID')}
                                         </p>
                                     </div>
 
@@ -347,7 +270,7 @@ const ForecastView = ({ forecast, onBack }) => {
                                             <p className="text-green-100">Total Laba Tahunan</p>
                                         </div>
                                         <p className="text-3xl font-bold">
-                                            Rp {annualSummary.total_profit.toLocaleString('id-ID')}
+                                            Rp {parseFloat(annualSummary.total_profit).toLocaleString('id-ID')}
                                         </p>
                                     </div>
 
@@ -357,7 +280,7 @@ const ForecastView = ({ forecast, onBack }) => {
                                             <p className="text-purple-100">Rata-rata Margin</p>
                                         </div>
                                         <p className="text-3xl font-bold">
-                                            {annualSummary.avg_margin.toFixed(2)}%
+                                            {parseFloat(annualSummary.avg_margin).toFixed(2)}%
                                         </p>
                                     </div>
 
@@ -367,7 +290,7 @@ const ForecastView = ({ forecast, onBack }) => {
                                             <p className="text-indigo-100">Rata-rata Kepercayaan Forecast</p>
                                         </div>
                                         <p className="text-3xl font-bold">
-                                            {annualSummary.avg_confidence.toFixed(2)}%
+                                            {parseFloat(annualSummary.avg_confidence).toFixed(2)}%
                                         </p>
                                     </div>
                                 </div>
@@ -376,6 +299,7 @@ const ForecastView = ({ forecast, onBack }) => {
                     )}
                 </div>
             </div>
+            )}
         </div>
     );
 };

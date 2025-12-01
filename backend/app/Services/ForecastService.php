@@ -10,9 +10,13 @@ class ForecastService
 {
     /**
      * Generate forecast menggunakan metode ARIMA atau exponential smoothing
+     * $forecastMonths default 12 (1 tahun), bisa diset 60 untuk 5 tahun
      */
     public function generateForecast(ForecastData $forecastData, string $method = 'auto', int $forecastMonths = 12)
     {
+        // Limit forecast months (max 60 untuk 5 tahun)
+        $forecastMonths = min($forecastMonths, 60);
+
         $historicalData = $forecastData->toArray();
 
         // Pilih metode berdasarkan parameter
@@ -261,11 +265,27 @@ class ForecastService
     }
 
     /**
-     * Calculate annual summary dari forecast results
+     * Calculate annual/period summary dari forecast results
+     * Bisa untuk 1 tahun, 2 tahun, hingga 5 tahun
      */
     public function calculateAnnualSummary(array $forecastResults)
     {
+        // Group by year jika ada multiple tahun
+        $groupedByYear = collect($forecastResults)->groupBy('year');
+
+        $yearlyData = [];
+        foreach ($groupedByYear as $year => $yearResults) {
+            $yearlyData[$year] = [
+                'total_income' => round($yearResults->sum('forecast_income'), 2),
+                'total_expense' => round($yearResults->sum('forecast_expense'), 2),
+                'total_profit' => round($yearResults->sum('forecast_profit'), 2),
+                'avg_margin' => round($yearResults->avg('forecast_margin'), 2),
+                'avg_confidence' => round($yearResults->avg('confidence_level'), 2),
+            ];
+        }
+
         return [
+            'by_year' => $yearlyData,
             'total_income' => round(collect($forecastResults)->sum('forecast_income'), 2),
             'total_expense' => round(collect($forecastResults)->sum('forecast_expense'), 2),
             'total_profit' => round(collect($forecastResults)->sum('forecast_profit'), 2),
