@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Loader, ArrowLeft, TrendingUp, AlertCircle, Trash2 } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { forecastDataApi } from '../../services/ManagementFinancial/forecastApi';
+import { forecastDataApi } from '../../services/forecast/forecastApi';
 import { toast } from 'react-toastify';
 import ForecastView from './Forecast-View';
 
