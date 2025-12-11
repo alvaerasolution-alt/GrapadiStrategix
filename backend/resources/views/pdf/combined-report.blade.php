@@ -229,11 +229,8 @@
                 {{ $data['business_background']->name }}
             </h1>
             <h2 style="font-size: 24px; color: #666; margin-bottom: 10px;">
-                BUSINESS PLAN & LAPORAN KEUANGAN
+                BUSINESS PLAN & PROYEKSI KEUANGAN
             </h2>
-            <p style="font-size: 16px; color: #888; margin-bottom: 10px;">
-                Periode: {{ $period_label }}
-            </p>
             <p style="font-size: 14px; color: #888;">
                 Disusun pada: {{ $generated_at }}
             </p>
@@ -278,7 +275,7 @@
                 {{-- <li>Rencana Keuangan</li> --}}
             </ol>
 
-            <h3 style="font-size: 16px; color: #2c5aa0; margin-bottom: 15px;">BAGIAN 2: LAPORAN KEUANGAN
+            <h3 style="font-size: 16px; color: #2c5aa0; margin-bottom: 15px;">BAGIAN 2: PROYEKSI KEUANGAN
                 ({{ $period_label }})</h3>
             <ol style="line-height: 2; font-size: 14px;" start="9">
                 <li>Ringkasan Eksekutif Keuangan</li>
@@ -459,7 +456,8 @@
                         <!-- TAM/SAM/SOM Pie Chart -->
                         @if (isset($marketAnalysisCharts['tam_sam_som']))
                             <div style="margin-top: 15px; text-align: center;">
-                                <img src="{{ $marketAnalysisCharts['tam_sam_som'] }}" alt="TAM/SAM/SOM Chart" class="chart-image">
+                                <img src="{{ $marketAnalysisCharts['tam_sam_som'] }}" alt="TAM/SAM/SOM Chart"
+                                    class="chart-image">
                             </div>
                         @endif
                     </div>
@@ -839,83 +837,52 @@
                     $groupedTeams = $data['team_structures']->groupBy('team_category');
                 @endphp
 
+                <!-- Summary Statistics - Pindah ke atas -->
+                <div style="margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #e5e7eb;">
+                    <p style="font-size: 11px; color: #666; line-height: 1.8; margin: 0;">
+                        <strong style="color: #2c5aa0;">Total Anggota:</strong>
+                        {{ $data['team_structures']->count() }} orang
+                        &nbsp;&nbsp;|&nbsp;&nbsp;
+                        <strong style="color: #2c5aa0;">Kategori Tim:</strong> {{ $groupedTeams->count() }} kategori
+                        &nbsp;&nbsp;|&nbsp;&nbsp;
+                        <strong style="color: #10b981;">Anggota Aktif:</strong>
+                        {{ $data['team_structures']->where('status', 'active')->count() }} orang
+                    </p>
+                </div>
+
                 @foreach ($groupedTeams as $category => $members)
                     <div style="margin-bottom: 30px; page-break-inside: avoid;">
-                        <!-- Category Header -->
-                        <div
-                            style="background: linear-gradient(135deg, #2c5aa0 0%, #4a7cc4 100%); color: white; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            <h3 style="font-size: 14px; font-weight: bold; margin: 0;">
-                                {{ $category }} ({{ $members->count() }} Anggota)
-                            </h3>
-                        </div>
-
-                        <!-- Organization Chart (if available) -->
-                        @if (isset($orgCharts[$category]))
-                            <div
-                                style="margin-bottom: 20px; text-align: center; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                                <h4 style="font-size: 12px; font-weight: bold; color: #2c5aa0; margin-bottom: 10px;">
-                                    Struktur Organisasi Hierarki
-                                </h4>
-                                <img src="{{ $orgCharts[$category] }}"
-                                    alt="Organization Chart - {{ $category }}"
-                                    style="max-width: 100%; height: auto; border-radius: 8px;">
-                            </div>
-                        @endif
+                        <!-- Category Header - Sederhana -->
+                        <h3
+                            style="font-size: 14px; font-weight: bold; color: #2c5aa0; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #2c5aa0;">
+                            Bagian {{ $category }}
+                        </h3>
 
                         <!-- Member Details Table -->
-                        <div style="margin-top: 15px;">
-                            <h4 style="font-size: 11px; font-weight: bold; color: #2c5aa0; margin-bottom: 8px;">
-                                Detail Anggota Tim
-                            </h4>
-                            <table class="table">
-                                <thead>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%;">No</th>
+                                    <th style="width: 20%;">Nama</th>
+                                    <th style="width: 15%;">Posisi</th>
+                                    <th style="width: 30%;">Job Desk</th>
+                                    <th style="width: 30%;">Pengalaman</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($members as $index => $member)
                                     <tr>
-                                        <th style="width: 5%;">No</th>
-                                        <th style="width: 20%;">Nama</th>
-                                        <th style="width: 15%;">Posisi</th>
-                                        <th style="width: 30%;">Job Desk</th>
-                                        <th style="width: 30%;">Pengalaman</th>
+                                        <td style="text-align: center;">{{ $index + 1 }}</td>
+                                        <td style="font-weight: bold;">{{ $member->member_name }}</td>
+                                        <td style="font-style: italic;">{{ $member->position }}</td>
+                                        <td style="font-size: 8px;">{!! nl2br(e($member->jobdesk ?? '-')) !!}</td>
+                                        <td style="font-size: 8px;">{!! nl2br(e($member->experience ?? '-')) !!}</td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($members as $index => $member)
-                                        <tr>
-                                            <td style="text-align: center;">{{ $index + 1 }}</td>
-                                            <td style="font-weight: bold;">{{ $member->member_name }}</td>
-                                            <td style="font-style: italic;">{{ $member->position }}</td>
-                                            <td style="font-size: 8px;">{!! nl2br(e($member->jobdesk ?? '-')) !!}</td>
-                                            <td style="font-size: 8px;">{!! nl2br(e($member->experience ?? '-')) !!}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 @endforeach
-
-                <!-- Summary Statistics -->
-                <div
-                    style="margin-top: 20px; background: #eff6ff; border: 1px solid #2c5aa0; border-radius: 6px; padding: 12px;">
-                    <h4 style="font-size: 11px; font-weight: bold; color: #2c5aa0; margin-bottom: 8px;">📊 Statistik
-                        Tim</h4>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-                        <div style="text-align: center;">
-                            <div style="font-size: 18px; font-weight: bold; color: #2c5aa0;">
-                                {{ $data['team_structures']->count() }}</div>
-                            <div style="font-size: 8px; color: #666;">Total Anggota</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 18px; font-weight: bold; color: #2c5aa0;">
-                                {{ $groupedTeams->count() }}</div>
-                            <div style="font-size: 8px; color: #666;">Kategori Tim</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 18px; font-weight: bold; color: #10b981;">
-                                {{ $data['team_structures']->where('status', 'active')->count() }}</div>
-                            <div style="font-size: 8px; color: #666;">Anggota Aktif</div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     @endif
@@ -1268,7 +1235,7 @@
     <div class="page">
         <div class="separator-page">
             <div class="separator-title">BAGIAN 2</div>
-            <div class="separator-subtitle">LAPORAN KEUANGAN</div>
+            <div class="separator-subtitle">PROYEKSI KEUANGAN</div>
             <p style="font-size: 16px; color: #666; margin-top: 20px;">Periode: {{ $period_label }}</p>
         </div>
     </div>
