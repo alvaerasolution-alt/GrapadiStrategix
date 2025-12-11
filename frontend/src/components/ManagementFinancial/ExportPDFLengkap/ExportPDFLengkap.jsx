@@ -3,6 +3,7 @@ import { FiDownload, FiArrowLeft, FiCalendar, FiFileText, FiTrendingUp, FiAlertC
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { useAuth } from "../../../contexts/AuthContext";
+import combinedPdfApi from "../../../services/managementFinancial/combinedPdfApi";
 // TODO: Comment - FinancialPlan nonaktif di Business Plan, gunakan axios langsung
 // import { financialPlanApi } from "../../../services/businessPlan";
 
@@ -96,41 +97,61 @@ const ExportPDFLengkap = ({ onBack, selectedBusiness: propSelectedBusiness }) =>
         periodValue = `${selectedYear}-${String(selectedMonth).padStart(2, "0")}`;
       }
 
-      const requestData = {
+      console.log("📤 Sending PDF Request with axios...");
+      console.log("📋 Request Data:", {
         user_id: parseInt(user.id),
         business_background_id: selectedBusiness.id,
         period_type: periodType,
         period_value: periodValue,
         mode: mode,
-      };
-
-      const response = await axios.post(`${apiUrl}/management-financial/pdf/generate-combined`, requestData, {
-        responseType: "blob",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
       });
 
-      const blob = new Blob([response.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `laporan-lengkap-${selectedBusiness.name.toLowerCase().replace(/\s+/g, "-")}-${periodValue}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      // Use axios API client dengan auto-auth interceptor
+      const response = await combinedPdfApi.generateCombinedPdf(
+        user.id,
+        selectedBusiness.id,
+        periodType,
+        periodValue,
+        mode
+      );
 
-      toast.success("PDF Laporan Lengkap berhasil diunduh!");
-    } catch (error) {
-      console.error("Error generating combined PDF:", error);
-      if (error.response?.status === 422) {
-        toast.error("Data tidak valid. Periksa kembali periode yang dipilih");
-      } else if (error.response?.status === 404) {
-        toast.error("Data bisnis tidak ditemukan");
+      console.log("📥 Response Status:", response.status);
+      console.log("📥 Response Data:", response.data);
+
+      if (response.data.status === "success" && response.data.data?.pdf_base64) {
+        // Convert base64 to Blob
+        const byteCharacters = atob(response.data.data.pdf_base64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = response.data.data.filename || `laporan-lengkap-${selectedBusiness.name.toLowerCase().replace(/\s+/g, "-")}-${periodValue}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+
+        toast.success("✅ PDF Laporan Lengkap berhasil diunduh!");
       } else {
-        toast.error(error.response?.data?.message || "Gagal mengunduh laporan PDF. Silakan coba lagi.");
+        throw new Error(response.data.message || "Response format tidak sesuai");
+      }
+    } catch (error) {
+      console.error("❌ Error generating combined PDF:", error);
+      if (error.response?.status === 422) {
+        toast.error("❌ Data tidak valid. Periksa kembali periode yang dipilih");
+      } else if (error.response?.status === 404) {
+        toast.error("❌ Data bisnis tidak ditemukan");
+      } else if (error.response?.status === 401) {
+        toast.error("❌ Sesi Anda telah berakhir. Silakan login kembali");
+      } else {
+        toast.error(error.response?.data?.message || "❌ Gagal mengunduh laporan PDF. Silakan coba lagi.");
       }
     } finally {
       setLoading(false);

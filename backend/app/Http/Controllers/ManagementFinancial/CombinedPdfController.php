@@ -149,6 +149,18 @@ class CombinedPdfController extends Controller
                 'chart_keys' => array_keys($businessPlanCharts)
             ]);
 
+            // 5b. Generate Market Analysis Chart (TAM/SAM/SOM Pie Chart)
+            Log::info('📊 Step 5b: Generating Market Analysis Charts...');
+            $marketAnalysisCharts = [];
+            if ($businessPlanData['market_analysis']) {
+                $marketAnalysisCharts = $this->generateMarketAnalysisCharts($businessPlanData['market_analysis']);
+            }
+
+            Log::info('✅ Market Analysis Charts Generated', [
+                'charts_count' => count($marketAnalysisCharts),
+                'chart_keys' => array_keys($marketAnalysisCharts)
+            ]);
+
             // 6. Generate Financial Report Charts (4 charts)
             Log::info('📊 Step 6: Generating Financial Report Charts...');
             $financialCharts = $this->generateCharts($financialData, $periodType);
@@ -201,6 +213,7 @@ class CombinedPdfController extends Controller
                 'executiveSummary' => $businessExecutiveSummary,  // Business executive summary
                 'financial_summary' => $financialExecutiveSummary,  // Financial summary
                 'charts' => $businessPlanCharts,  // Business Plan charts (6 charts) - untuk Section 8
+                'marketAnalysisCharts' => $marketAnalysisCharts,  // Market Analysis charts (TAM/SAM/SOM pie) - untuk Section 3
                 'financialCharts' => $financialCharts,  // Financial Report charts (4 charts) - untuk BAGIAN 2
                 'workflows' => $workflows,  // Workflow diagrams for operational plans - untuk Section 6
                 'orgCharts' => $orgCharts,  // Organization charts for team structures - untuk Section 7
@@ -236,8 +249,17 @@ class CombinedPdfController extends Controller
                 'user_id' => $userId
             ]);
 
-            // Return PDF sebagai download
-            return $pdf->download($filename);
+            // Convert PDF to base64 dan return sebagai JSON
+            $pdfContent = $pdf->output();
+            $pdfBase64 = base64_encode($pdfContent);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'filename' => $filename,
+                    'pdf_base64' => $pdfBase64
+                ]
+            ], 200);
         } catch (\Exception $e) {
             Log::error('Combined PDF Generation Error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
@@ -870,6 +892,71 @@ class CombinedPdfController extends Controller
             . "Kategori pendapatan tertinggi berasal dari {$topIncome}, "
             . "sedangkan pengeluaran terbesar untuk {$topExpense}. "
             . "Saldo kas saat ini adalah Rp " . number_format($summary['current_cash_balance'], 0, ',', '.') . ".";
+    }
+
+    /**
+     * Generate Market Analysis Charts (TAM/SAM/SOM Pie Chart)
+     */
+    private function generateMarketAnalysisCharts($marketAnalysis)
+    {
+        $charts = [];
+
+        try {
+            // Generate TAM/SAM/SOM Pie Chart
+            $tamSomChart = $this->generateTamSamSomChart($marketAnalysis);
+            if ($tamSomChart) {
+                $charts['tam_sam_som'] = $tamSomChart;
+                Log::info('✅ TAM/SAM/SOM chart generated');
+            }
+        } catch (\Exception $e) {
+            Log::error('Market Analysis Chart Generation Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+
+        return $charts;
+    }
+
+    /**
+     * Generate TAM/SAM/SOM Pie Chart
+     */
+    private function generateTamSamSomChart($marketAnalysis)
+    {
+        $tam = floatval($marketAnalysis->tam_total ?? 0);
+        $sam = floatval($marketAnalysis->sam_total ?? 0);
+        $som = floatval($marketAnalysis->som_total ?? 0);
+
+        if ($tam <= 0 && $sam <= 0 && $som <= 0) {
+            Log::warning('⚠️ No valid TAM/SAM/SOM data for chart');
+            return null;
+        }
+
+        $chartConfig = [
+            'type' => 'pie',
+            'data' => [
+                'labels' => ['TAM (Total Addressable Market)', 'SAM (Serviceable Available Market)', 'SOM (Serviceable Obtainable Market)'],
+                'datasets' => [[
+                    'data' => [$tam, $sam, $som],
+                    'backgroundColor' => ['#3b82f6', '#10b981', '#8b5cf6']
+                ]]
+            ],
+            'options' => [
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Analisis Ukuran Pasar (TAM/SAM/SOM)'
+                    ],
+                    'legend' => [
+                        'position' => 'bottom'
+                    ],
+                    'datalabels' => [
+                        'display' => false
+                    ]
+                ]
+            ]
+        ];
+
+        return $this->getQuickChartUrl($chartConfig, 600, 400);
     }
 
     /**

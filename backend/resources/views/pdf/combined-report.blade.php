@@ -455,6 +455,13 @@
                                 <td>Pasar yang dapat diraih</td>
                             </tr>
                         </table>
+
+                        <!-- TAM/SAM/SOM Pie Chart -->
+                        @if (isset($marketAnalysisCharts['tam_sam_som']))
+                            <div style="margin-top: 15px; text-align: center;">
+                                <img src="{{ $marketAnalysisCharts['tam_sam_som'] }}" alt="TAM/SAM/SOM Chart" class="chart-image">
+                            </div>
+                        @endif
                     </div>
                 @endif
 
