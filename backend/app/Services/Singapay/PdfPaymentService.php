@@ -26,6 +26,7 @@ class PdfPaymentService
 
     /**
      * Get available packages
+     * 🔧 IMPROVED: Better data formatting
      */
     public function getAvailablePackages(): array
     {
@@ -41,24 +42,71 @@ class PdfPaymentService
                     'description' => $package->description,
                     'price' => $package->price,
                     'formatted_price' => $package->formatted_price,
-                    'duration_days' => $package->duration_days,
+                    'duration_days' => (int) $package->duration_days, // 🔧 Ensure integer
                     'duration_text' => $package->duration_text,
-                    'features' => $package->features,
+                    'features' => $package->features ?? [],
                 ];
             })->toArray(),
         ];
     }
 
     /**
+     * Check user Pro access status from database
+     */
+    public function checkAccess(User $user): array
+    {
+        $hasAccess = $user->pdf_access_active
+            && $user->pdf_access_expires_at
+            && $user->pdf_access_expires_at->isFuture();
+
+        $remainingDays = null;
+        if ($hasAccess && $user->pdf_access_expires_at) {
+            $remainingDays = now()->diffInDays($user->pdf_access_expires_at, false);
+            $remainingDays = max(0, (int)$remainingDays);
+        }
+
+        return [
+            'success' => true,
+            'has_access' => $hasAccess,
+            'package' => $hasAccess ? $user->pdf_access_package : null,
+            'expires_at' => $hasAccess ? $user->pdf_access_expires_at : null,
+            'remaining_days' => $remainingDays,
+        ];
+    }
+
+    /**
      * Create purchase and initiate payment
+     * 🔧 IMPROVED: Better validation and error handling
      */
     public function createPurchase(User $user, int $packageId, string $paymentMethod, ?string $bankCode = null): array
     {
         DB::beginTransaction();
 
         try {
-            // Get package
-            $package = PremiumPdf::active()->findOrFail($packageId);
+            // Get package with validation
+            $package = PremiumPdf::active()->find($packageId);
+
+            if (!$package) {
+                DB::rollBack();
+                return [
+                    'success' => false,
+                    'message' => 'Package not found or inactive',
+                ];
+            }
+
+            // Validate duration_days
+            $durationDays = (int) $package->duration_days;
+            if ($durationDays <= 0) {
+                DB::rollBack();
+                Log::error('[PDF Payment] Invalid duration_days', [
+                    'package_id' => $packageId,
+                    'duration_days' => $package->duration_days,
+                ]);
+                return [
+                    'success' => false,
+                    'message' => 'Invalid package configuration',
+                ];
+            }
 
             // Check if user already has active subscription
             $activePurchase = $user->pdfPurchases()
@@ -78,6 +126,15 @@ class PdfPaymentService
                 ];
             }
 
+            // Validate payment method
+            if ($paymentMethod === 'virtual_account' && !$bankCode) {
+                DB::rollBack();
+                return [
+                    'success' => false,
+                    'message' => 'Bank code is required for Virtual Account payment',
+                ];
+            }
+
             // Create purchase record
             $purchase = PdfPurchase::create([
                 'user_id' => $user->id,
@@ -87,6 +144,13 @@ class PdfPaymentService
                 'amount_paid' => $package->price,
                 'payment_method' => $paymentMethod,
                 'status' => 'pending',
+            ]);
+
+            Log::info('[PDF Payment] Purchase created', [
+                'purchase_id' => $purchase->id,
+                'user_id' => $user->id,
+                'package_id' => $packageId,
+                'duration_days' => $durationDays,
             ]);
 
             // Process based on payment method
@@ -126,6 +190,9 @@ class PdfPaymentService
                 'user_id' => $user->id,
                 'package_id' => $packageId,
                 'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
             ]);
 
             return [
@@ -165,7 +232,7 @@ class PdfPaymentService
     {
         try {
             $purchase = PdfPurchase::where('transaction_code', $transactionCode)
-                ->with('paymentTransaction')
+                ->with(['paymentTransaction', 'premiumPdf'])
                 ->first();
 
             if (!$purchase) {
