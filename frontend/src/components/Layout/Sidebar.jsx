@@ -125,13 +125,6 @@ const Sidebar = ({ activeSection, setActiveSection, activeSubSection, setActiveS
     },
 
     {
-      id: "export-pdf-lengkap",
-      label: "Export PDF Lengkap",
-      icon: Layers,
-      description: "Unduh Business Plan + Laporan Keuangan",
-    },
-
-    {
       id: "forecast",
       label: "Forecast Keuangan",
       icon: TrendingUp,
@@ -148,6 +141,13 @@ const Sidebar = ({ activeSection, setActiveSection, activeSubSection, setActiveS
           icon: BarChart3,
         },
       ],
+    },
+
+    {
+      id: "export-pdf-lengkap",
+      label: "Export PDF Lengkap",
+      icon: Layers,
+      description: "Unduh Business Plan + Laporan Keuangan",
     },
 
     {
