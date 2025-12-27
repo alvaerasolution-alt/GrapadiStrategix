@@ -5,13 +5,18 @@ export const affiliateCommissionApi = {
   getStatistics: () => api.get("/affiliate/commissions/statistics"),
 
   // Get commission history with pagination
-  getHistory: (params = {}) => api.get("/affiliate/commissions/history", { params }),
+  getHistory: (params = {}) =>
+    api.get("/affiliate/commissions/history", { params }),
 
   // Get withdrawable balance
   getWithdrawableBalance: () => api.get("/affiliate/commissions/withdrawable"),
 
   // Request withdrawal
-  requestWithdrawal: (amount) => api.post("/affiliate/commissions/withdraw", { amount }),
+  withdraw: (data) => api.post("/affiliate/withdraw", data),
+
+  // Get withdrawal history
+  getWithdrawalHistory: (params = {}) =>
+    api.get("/affiliate/withdrawals", { params }),
 };
 
 export default affiliateCommissionApi;
