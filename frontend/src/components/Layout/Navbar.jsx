@@ -17,14 +17,14 @@ function Navbar({ isDarkMode, toggleDarkMode }) {
   }, [isOpen]);
 
   return (
-    <nav className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md fixed top-0 left-0 w-full z-50 border-b border-gray-200 dark:border-gray-700">
-      <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+    <nav className="fixed top-0 left-0 z-50 w-full border-b border-gray-200 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md dark:border-gray-700">
+      <div className="container flex items-center justify-between px-6 py-2 mx-auto">
         {/* ========== LOGO ========== */}
         <Link to="/" className="flex items-center space-x-2">
           <img
             src={isDarkMode ? "/assets/logo/logo-dark.png" : "/assets/logo/logo-light.png"}
             alt="Grapadi Strategix"
-            className="h-14 w-auto object-contain"
+            className="object-contain w-auto h-20"
             onError={(e) => {
               // Fallback to text if image not found
               e.target.style.display = "none";
@@ -37,40 +37,40 @@ function Navbar({ isDarkMode, toggleDarkMode }) {
         </Link>
 
         {/* ========== DESKTOP MENU ========== */}
-        <div className="hidden md:flex items-center space-x-8">
+        <div className="items-center hidden space-x-8 md:flex">
           <Link
             to="/"
-            className="text-gray-700 dark:text-gray-300 font-medium transition-colors"
+            className="font-medium text-gray-700 transition-colors dark:text-gray-300"
             style={{ ":hover": { color: "#084404" } }}
             onMouseEnter={(e) => (e.currentTarget.style.color = "#167814")}
             onMouseLeave={(e) => (e.currentTarget.style.color = "")}
           >
             Home
           </Link>
-          <a href="#features" className="text-gray-700 dark:text-gray-300 font-medium transition-colors" onMouseEnter={(e) => (e.currentTarget.style.color = "#167814")} onMouseLeave={(e) => (e.currentTarget.style.color = "")}>
+          <a href="#features" className="font-medium text-gray-700 transition-colors dark:text-gray-300" onMouseEnter={(e) => (e.currentTarget.style.color = "#167814")} onMouseLeave={(e) => (e.currentTarget.style.color = "")}>
             Features
           </a>
           {/* <a
             href="#about"
-            className="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 font-medium transition-colors"
+            className="font-medium text-gray-700 transition-colors dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400"
           >
             About
           </a> */}
           {/* <a
             href="#contact"
-            className="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 font-medium transition-colors"
+            className="font-medium text-gray-700 transition-colors dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400"
           >
             Contact
           </a> */}
         </div>
 
         {/* ========== DARK MODE + CTA BUTTONS (DESKTOP) ========== */}
-        <div className="hidden md:flex items-center space-x-4">
-          <button onClick={toggleDarkMode} className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" aria-label="Toggle dark mode">
+        <div className="items-center hidden space-x-4 md:flex">
+          <button onClick={toggleDarkMode} className="p-2 text-gray-600 transition-colors rounded-lg dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Toggle dark mode">
             {isDarkMode ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} className="text-gray-600" />}
           </button>
 
-          <Link to="/login" className="text-gray-700 dark:text-gray-300 font-medium transition-colors" onMouseEnter={(e) => (e.currentTarget.style.color = "#084404")} onMouseLeave={(e) => (e.currentTarget.style.color = "")}>
+          <Link to="/login" className="font-medium text-gray-700 transition-colors dark:text-gray-300" onMouseEnter={(e) => (e.currentTarget.style.color = "#084404")} onMouseLeave={(e) => (e.currentTarget.style.color = "")}>
             Sign In
           </Link>
           <Link
@@ -85,7 +85,7 @@ function Navbar({ isDarkMode, toggleDarkMode }) {
         </div>
 
         {/* ========== HAMBURGER BUTTON (MOBILE) ========== */}
-        <button className="md:hidden focus:outline-none text-gray-800 dark:text-gray-100 z-50" onClick={toggleMenu}>
+        <button className="z-50 text-gray-800 md:hidden focus:outline-none dark:text-gray-100" onClick={toggleMenu}>
           {isOpen ? <X size={28} className="dark:text-black" /> : <Menu size={28} />}
         </button>
 
@@ -95,39 +95,39 @@ function Navbar({ isDarkMode, toggleDarkMode }) {
             isOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-full pointer-events-none"
           }`}
         >
-          <ul className="w-full space-y-6 text-center dark:text-white font-medium text-lg">
+          <ul className="w-full space-y-6 text-lg font-medium text-center dark:text-white">
             <li>
-              <Link to="/" className="hover:text-green-600 transition-colors" onClick={() => setIsOpen(false)}>
+              <Link to="/" className="transition-colors hover:text-green-600" onClick={() => setIsOpen(false)}>
                 Home
               </Link>
             </li>
             <li>
-              <a href="#features" className="hover:text-green-600 transition-colors" onClick={() => setIsOpen(false)}>
+              <a href="#features" className="transition-colors hover:text-green-600" onClick={() => setIsOpen(false)}>
                 Features
               </a>
             </li>
             <li>
-              <a href="#about" className="hover:text-green-600 transition-colors" onClick={() => setIsOpen(false)}>
+              <a href="#about" className="transition-colors hover:text-green-600" onClick={() => setIsOpen(false)}>
                 About
               </a>
             </li>
             <li>
-              <a href="#contact" className="hover:text-green-600 transition-colors" onClick={() => setIsOpen(false)}>
+              <a href="#contact" className="transition-colors hover:text-green-600" onClick={() => setIsOpen(false)}>
                 Contact
               </a>
             </li>
             <li className="w-full px-8">
-              <Link to="/signup" className="block w-full text-center border-2 border-green-600 text-green-600 py-3 rounded-md hover:bg-green-50 dark:hover:bg-gray-800 transition" onClick={() => setIsOpen(false)}>
+              <Link to="/signup" className="block w-full py-3 text-center text-green-600 transition border-2 border-green-600 rounded-md hover:bg-green-50 dark:hover:bg-gray-800" onClick={() => setIsOpen(false)}>
                 Sign Up
               </Link>
             </li>
             <li className="w-full px-8 -mt-4">
-              <Link to="/signin" className="block w-full text-center bg-green-600 text-white py-3 rounded-md hover:bg-green-700 transition" onClick={() => setIsOpen(false)}>
+              <Link to="/signin" className="block w-full py-3 text-center text-white transition bg-green-600 rounded-md hover:bg-green-700" onClick={() => setIsOpen(false)}>
                 Sign In
               </Link>
             </li>
             <li className="mt-6">
-              <button onClick={toggleDarkMode} className="p-3 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors" aria-label="Toggle dark mode">
+              <button onClick={toggleDarkMode} className="p-3 text-gray-600 transition-colors bg-gray-100 rounded-full dark:bg-gray-800 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400" aria-label="Toggle dark mode">
                 {isDarkMode ? <Sun size={22} className="text-yellow-400" /> : <Moon size={22} className="text-gray-600" />}
               </button>
             </li>
