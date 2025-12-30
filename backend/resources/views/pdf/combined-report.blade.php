@@ -81,45 +81,29 @@ $sentences = preg_split('/(?<=[.!?])\s+(?=[A-Z]) /u', $text, -1, PREG_SPLIT_NO_E
                 bottom: 0;
                 z-index: 9999;
                 pointer-events: none;
-
             }
 
             /* Watermark Content (Grouped Border Box) */
             .watermark-content {
                 position: fixed;
                 top: 50%;
-                left: 42%;
+                left: 44%;
                 transform: translate(-50%, -50%) rotate(-45deg);
                 text-align: center;
                 z-index: 9999;
                 pointer-events: none;
-
-                /* Border Styles moved here */
-                border: 5px solid rgba(0, 0, 0, 0.17);
-                /* Thicker border for outer box */
-                padding: 30px 50px;
-                border-radius: 20px;
             }
 
             .watermark-logo {
-                width: 450px;
+                width: 800px;
                 /* Adjusted size to fit nicely */
                 height: auto;
-                opacity: 0.2;
+                opacity: 0.35;
                 display: block;
-                margin: 0 auto 10px auto;
-                /* Margin bottom to separate from text */
+                margin: 0 auto;
             }
 
-            .watermark-text {
-                font-size: 55px;
-                font-weight: 900;
-                color: rgba(0, 0, 0, 0.25);
-                white-space: nowrap;
-                letter-spacing: 15px;
-                line-height: 1;
-                /* Removed border, padding, positioning from here */
-            }
+
 
             /* Layout halaman */
             .page {
@@ -345,7 +329,6 @@ $sentences = preg_split('/(?<=[.!?])\s+(?=[A-Z]) /u', $text, -1, PREG_SPLIT_NO_E
         <div class="watermark-container">
             <div class="watermark-content">
                 <img src="{{ $watermark_logo }}" alt="Watermark" class="watermark-logo">
-                <div class="watermark-text">FREE VERSION</div>
             </div>
         </div>
         @endif
