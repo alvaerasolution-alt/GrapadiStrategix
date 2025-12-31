@@ -236,6 +236,29 @@ class CombinedPdfController extends Controller
                 'monthly_trend' => $this->generateMonthlyTrendAnalysis($financialData['monthly_summary'] ?? [])
             ];
 
+            // 8a. Calculate Yearly Projections (5 Years) from Forecast Results
+            Log::info('📊 Step 8a: Calculating Yearly Projections from Forecast...');
+            // Get all forecast results for 5 years (not just current period)
+            $allForecastResults = $this->getAllForecastResults($userId, $businessBackgroundId);
+            $yearlyProjections = $this->calculateYearlyProjections($allForecastResults);
+            $yearlyProjectionChart = $this->generateYearlyProjectionChart($yearlyProjections);
+
+            Log::info('✅ Yearly Projections Calculated', [
+                'forecast_results_count' => count($allForecastResults),
+                'years_count' => count($yearlyProjections),
+                'has_chart' => !empty($yearlyProjectionChart),
+                'yearly_projections_data' => $yearlyProjections,
+                'chart_url_length' => $yearlyProjectionChart ? strlen($yearlyProjectionChart) : 0
+            ]);
+
+            // Debug: Log data before passing to view
+            Log::info('🔍 Data being passed to PDF view for yearly projections:', [
+                'yearly_projections_empty' => empty($yearlyProjections),
+                'yearly_projections_count' => count($yearlyProjections),
+                'yearly_projection_chart_empty' => empty($yearlyProjectionChart),
+                'yearly_projection_chart_preview' => $yearlyProjectionChart ? substr($yearlyProjectionChart, 0, 100) : null
+            ]);
+
             $pdf = PDF::loadView('pdf.combined-report', [
                 'data' => $businessPlanData,  // Business plan data
                 'financial_data' => $financialData,  // Financial data
@@ -248,6 +271,9 @@ class CombinedPdfController extends Controller
                 'workflows' => $workflows,  // Workflow diagrams for operational plans - untuk Section 6
                 'workflowImages' => $workflowImages,  // Workflow uploaded images as data URLs (converted for PDF)
                 'orgCharts' => $orgCharts,  // Organization charts for team structures - untuk Section 7
+                // Yearly Projections (5 Years Summary)
+                'yearly_projections' => $yearlyProjections,
+                'yearly_projection_chart' => $yearlyProjectionChart,
                 // Forecast data - untuk BAGIAN 3
                 'forecast_data' => $forecastData['forecast_data'] ?? null,
                 'forecast_results' => $forecastData['results'] ?? [],
@@ -259,7 +285,7 @@ class CombinedPdfController extends Controller
                 'mode' => $mode,
                 'period_type' => $periodType,
                 'period_label' => $this->getPeriodLabel($periodType, $periodValue),
-                'generated_at' => now()->format('d F Y H:i:s'),
+                'generated_at' => now()->format('d F Y'),
                 'watermark_logo' => $watermarkLogoDataUrl  // Watermark logo as data URL
             ]);
 
@@ -1393,6 +1419,128 @@ class CombinedPdfController extends Controller
     }
 
     /**
+     * Calculate Yearly Projections (5 Years) from Forecast Results
+     * Aggregates monthly forecast data and groups by year
+     */
+    private function calculateYearlyProjections($forecastResults)
+    {
+        if (empty($forecastResults)) {
+            Log::info('📊 No forecast results available for yearly projections');
+            return [];
+        }
+
+        $yearlyData = [];
+
+        // Group forecast results by year and sum monthly values
+        foreach ($forecastResults as $result) {
+            $year = $result['year'] ?? date('Y');
+
+            if (!isset($yearlyData[$year])) {
+                $yearlyData[$year] = [
+                    'year' => $year,
+                    'income' => 0,
+                    'expense' => 0,
+                    'profit' => 0
+                ];
+            }
+
+            // Accumulate monthly values into yearly totals
+            // Field names: forecast_income, forecast_expense, forecast_profit
+            $yearlyData[$year]['income'] += floatval($result['forecast_income'] ?? 0);
+            $yearlyData[$year]['expense'] += floatval($result['forecast_expense'] ?? 0);
+            $yearlyData[$year]['profit'] += floatval($result['forecast_profit'] ?? 0);
+        }
+
+        // Sort by year and convert to indexed array
+        ksort($yearlyData);
+        $yearlyData = array_values($yearlyData);
+
+        Log::info('📊 Yearly Projections Calculated from Forecast', [
+            'years_count' => count($yearlyData),
+            'years' => array_column($yearlyData, 'year')
+        ]);
+
+        return $yearlyData;
+    }
+
+    /**
+     * Generate Yearly Projection Chart (Line Chart with 3 lines: Income, Expense, Profit)
+     * Uses forecast results aggregated by year
+     */
+    private function generateYearlyProjectionChart($yearlyProjections)
+    {
+        if (empty($yearlyProjections)) {
+            Log::warning('⚠️ No yearly projections data for chart');
+            return null;
+        }
+
+        $labels = array_map(fn($item) => 'Tahun ' . $item['year'], $yearlyProjections);
+        $incomeData = array_map(fn($item) => $item['income'], $yearlyProjections);
+        $expenseData = array_map(fn($item) => $item['expense'], $yearlyProjections);
+        $profitData = array_map(fn($item) => $item['profit'], $yearlyProjections);
+
+        $chartConfig = [
+            'type' => 'line',
+            'data' => [
+                'labels' => $labels,
+                'datasets' => [
+                    [
+                        'label' => 'Pendapatan',
+                        'data' => $incomeData,
+                        'borderColor' => 'rgb(34, 197, 94)',
+                        'backgroundColor' => 'rgba(34, 197, 94, 0.1)',
+                        'borderWidth' => 3,
+                        'tension' => 0.4,
+                        'fill' => false
+                    ],
+                    [
+                        'label' => 'Pengeluaran',
+                        'data' => $expenseData,
+                        'borderColor' => 'rgb(239, 68, 68)',
+                        'backgroundColor' => 'rgba(239, 68, 68, 0.1)',
+                        'borderWidth' => 3,
+                        'tension' => 0.4,
+                        'fill' => false
+                    ],
+                    [
+                        'label' => 'Laba',
+                        'data' => $profitData,
+                        'borderColor' => 'rgb(59, 130, 246)',
+                        'backgroundColor' => 'rgba(59, 130, 246, 0.1)',
+                        'borderWidth' => 3,
+                        'tension' => 0.4,
+                        'fill' => false
+                    ]
+                ]
+            ],
+            'options' => [
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Proyeksi Keuangan Tahunan (5 Tahun Kedepan)',
+                        'font' => ['size' => 16, 'weight' => 'bold']
+                    ],
+                    'legend' => [
+                        'display' => true,
+                        'position' => 'bottom'
+                    ]
+                ],
+                'scales' => [
+                    'y' => [
+                        'beginAtZero' => true,
+                        'ticks' => [
+                            'callback' => 'function(value) { return "Rp " + value.toLocaleString("id-ID"); }'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        return $this->getQuickChartUrl($chartConfig, 600, 350);
+    }
+
+    /**
      * Generate Organization Charts using QuickChart with Mermaid
      */
     private function generateOrganizationCharts($teamStructures)
@@ -1530,6 +1678,46 @@ class CombinedPdfController extends Controller
         } catch (\Exception $e) {
             Log::error('Mermaid Chart URL generation error: ' . $e->getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Get all Forecast Results for 5 years projection
+     * Fetches all forecast results regardless of period filter
+     */
+    private function getAllForecastResults($userId, $businessBackgroundId)
+    {
+        try {
+            // Get all forecast results for this user and business (up to 5 years)
+            $currentYear = date('Y');
+            $endYear = $currentYear + 4; // 5 years projection
+
+            // Query forecast results through forecast_data relation
+            // Join with financial_simulations to filter by business_background_id
+            $results = ForecastResult::whereHas('forecastData', function ($query) use ($userId, $businessBackgroundId) {
+                $query->where('user_id', $userId)
+                    ->whereHas('financialSimulation', function ($simQuery) use ($businessBackgroundId) {
+                        $simQuery->where('business_background_id', $businessBackgroundId);
+                    });
+            })
+                ->whereBetween('year', [$currentYear, $endYear])
+                ->orderBy('year', 'asc')
+                ->orderBy('month', 'asc')
+                ->get()
+                ->toArray();
+
+            Log::info('📊 All Forecast Results Retrieved', [
+                'user_id' => $userId,
+                'business_background_id' => $businessBackgroundId,
+                'year_range' => [$currentYear, $endYear],
+                'results_count' => count($results),
+                'years_found' => collect($results)->pluck('year')->unique()->values()->toArray()
+            ]);
+
+            return $results;
+        } catch (\Exception $e) {
+            Log::error('Error fetching all forecast results: ' . $e->getMessage());
+            return [];
         }
     }
 
