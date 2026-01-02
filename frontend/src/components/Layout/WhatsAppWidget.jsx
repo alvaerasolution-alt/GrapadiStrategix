@@ -95,8 +95,8 @@ const WhatsAppWidget = () => {
                                 type="submit"
                                 className="w-full py-2 sm:py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs sm:text-sm font-bold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-2 group"
                             >
-                                <FaWhatsapp size={16} className="sm:block hidden group-hover:scale-110 transition-transform" />
-                                <FaWhatsapp size={20} className="sm:hidden group-hover:scale-110 transition-transform" />
+                                <FaWhatsapp size={18} className="sm:block hidden group-hover:scale-110 transition-transform" />
+                                <FaWhatsapp size={26} className="sm:hidden group-hover:scale-110 transition-transform" />
                                 <span>Mulai Chat</span>
                             </button>
                         </form>
