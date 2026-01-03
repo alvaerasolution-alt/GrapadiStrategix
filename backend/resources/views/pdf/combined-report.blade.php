@@ -9,46 +9,105 @@
 /**
 * Split long text into multiple paragraphs
 * Splits text by sentences and groups them per paragraph
+* Enhanced to handle newlines, numbered lists, and various text formats
 */
 if (!function_exists('splitLongText')) {
-function splitLongText($text, $sentencesPerParagraph = 3)
+function splitLongText($text, $sentencesPerParagraph = 2)
 {
 $text = trim(strip_tags(htmlspecialchars_decode($text)));
 if (empty($text)) {
 return [];
 }
 
-// Split berdasarkan titik diikuti spasi atau newline
-$sentences = preg_split('/(?<=[.!?])\s+(?=[A-Z]) /u', $text, -1, PREG_SPLIT_NO_EMPTY);
+// First, check if text already has double newlines (paragraph separators)
+if (strpos($text, "\n\n") !== false) {
+$paragraphs = preg_split('/\n\n+/', $text, -1, PREG_SPLIT_NO_EMPTY);
+return array_map('trim', array_filter($paragraphs));
+}
 
-    if (empty($sentences)) {
-    return [$text];
-    }
+// Check for escaped newlines (\\n\\n)
+if (strpos($text, '\\n\\n') !== false) {
+$paragraphs = preg_split('/\\\\n\\\\n+/', $text, -1, PREG_SPLIT_NO_EMPTY);
+return array_map('trim', array_filter($paragraphs));
+}
 
-    $paragraphs=[];
-    $currentParagraph=[];
-    $sentenceCount=0;
+// Split by single newlines for list items or separate lines
+if (preg_match('/\n\d+\.|\n-|\n\*/', $text)) {
+$paragraphs = preg_split('/\n(?=\d+\.|-|\*)/', $text, -1, PREG_SPLIT_NO_EMPTY);
+$result = [];
+$buffer = [];
+foreach ($paragraphs as $para) {
+$para = trim($para);
+if (!empty($para)) {
+// If it's a list item or too long, keep it separate
+if (preg_match('/^\d+\.|-|\*/', $para) || strlen($para) > 500) {
+if (!empty($buffer)) {
+$result[] = implode(' ', $buffer);
+$buffer = [];
+}
+$result[] = $para;
+} else {
+$buffer[] = $para;
+}
+}
+}
+if (!empty($buffer)) {
+$result[] = implode(' ', $buffer);
+}
+return array_filter($result);
+}
 
-    foreach ($sentences as $sentence) {
-    $cleanSentence=trim($sentence);
-    if (!empty($cleanSentence)) {
-    $currentParagraph[]=$cleanSentence;
-    $sentenceCount++;
+// Default: Split by sentences and group them
+$sentences = preg_split('/(?<=[.!?])\s+(?=[A-Z])/u', $text, -1, PREG_SPLIT_NO_EMPTY);
 
-    if ($sentenceCount>= $sentencesPerParagraph) {
-    $paragraphs[] = implode(' ', $currentParagraph);
-    $currentParagraph = [];
-    $sentenceCount = 0;
-    }
-    }
-    }
+if (empty($sentences) || count($sentences) <= 1) {
+// If no sentence split possible, try to break by length
+if (strlen($text) > 800) {
+$chunks = [];
+$words = explode(' ', $text);
+$currentChunk = [];
+$currentLength = 0;
+foreach ($words as $word) {
+$currentChunk[] = $word;
+$currentLength += strlen($word) + 1;
+if ($currentLength > 400) {
+$chunks[] = implode(' ', $currentChunk);
+$currentChunk = [];
+$currentLength = 0;
+}
+}
+if (!empty($currentChunk)) {
+$chunks[] = implode(' ', $currentChunk);
+}
+return array_filter($chunks);
+}
+return [$text];
+}
 
-    // Tambahkan sisa kalimat
-    if (!empty($currentParagraph)) {
-    $paragraphs[] = implode(' ', $currentParagraph);
-    }
+$paragraphs = [];
+$currentParagraph = [];
+$sentenceCount = 0;
 
-    return array_filter($paragraphs);
+foreach ($sentences as $sentence) {
+$cleanSentence = trim($sentence);
+if (!empty($cleanSentence)) {
+$currentParagraph[] = $cleanSentence;
+$sentenceCount++;
+
+if ($sentenceCount >= $sentencesPerParagraph) {
+$paragraphs[] = implode(' ', $currentParagraph);
+$currentParagraph = [];
+$sentenceCount = 0;
+}
+}
+}
+
+// Tambahkan sisa kalimat
+if (!empty($currentParagraph)) {
+$paragraphs[] = implode(' ', $currentParagraph);
+}
+
+return array_filter($paragraphs);
     }
     }
     @endphp
@@ -159,6 +218,7 @@ $sentences = preg_split('/(?<=[.!?])\s+(?=[A-Z]) /u', $text, -1, PREG_SPLIT_NO_E
                 font-size: 14px;
                 color: #333;
                 font-weight: bold;
+                margin-top: 10px;
                 margin-bottom: 8px;
             }
 
@@ -264,7 +324,7 @@ $sentences = preg_split('/(?<=[.!?])\s+(?=[A-Z]) /u', $text, -1, PREG_SPLIT_NO_E
                 background: #f0f9ff;
                 border-left: 4px solid #0284c7;
                 padding: 12px 15px;
-                margin-top: 12px;
+                margin-top: 18px;
                 border-radius: 4px;
                 font-size: 11px;
                 line-height: 1.6;
@@ -1870,8 +1930,8 @@ $sentences = preg_split('/(?<=[.!?])\s+(?=[A-Z]) /u', $text, -1, PREG_SPLIT_NO_E
                     <h4 style="font-weight: bold; font-size: 13px; margin-bottom: 10px;">Ringkasan Per Kategori</h4>
 
                     <!-- Top 5 Pendapatan -->
-                    <div class="subsection">
-                        <div class="subsection-title">Top 5 Pendapatan</div>
+                    <div style="margin-bottom: 15px;">
+                        <h5 style="font-size: 13px; color: #333; font-weight: bold; margin-top: 10px; margin-bottom: 8px;">Top 5 Pendapatan</h5>
                         <table class="table">
                             <tr>
                                 <th>No</th>
@@ -1906,8 +1966,8 @@ $sentences = preg_split('/(?<=[.!?])\s+(?=[A-Z]) /u', $text, -1, PREG_SPLIT_NO_E
                     </div>
 
                     <!-- Top 5 Pengeluaran -->
-                    <div class="subsection">
-                        <div class="subsection-title">Top 5 Pengeluaran</div>
+                    <div style="margin-bottom: 15px;">
+                        <h5 style="font-size: 13px; color: #333; font-weight: bold; margin-top: 10px; margin-bottom: 8px;">Top 5 Pengeluaran</h5>
                         <table class="table">
                             <tr>
                                 <th>No</th>
@@ -2298,7 +2358,7 @@ $sentences = preg_split('/(?<=[.!?])\s+(?=[A-Z]) /u', $text, -1, PREG_SPLIT_NO_E
                     @php
                     $execSummaryParagraphs = splitLongText(
                     $financial_summary['executive_summary'] ?? 'Data ringkasan eksekutif tidak tersedia',
-                    3,
+                    2,
                     );
                     @endphp
                     @foreach ($execSummaryParagraphs as $para)
@@ -2313,7 +2373,7 @@ $sentences = preg_split('/(?<=[.!?])\s+(?=[A-Z]) /u', $text, -1, PREG_SPLIT_NO_E
                 <div class="subsection" style="margin-top: 25px;">
                     <div class="subsection-title">Ringkasan Eksekutif Forecast</div>
                     @php
-                    $forecastSummaryParagraphs = splitLongText($forecast_summary ?? '', 3);
+                    $forecastSummaryParagraphs = splitLongText($forecast_summary ?? '', 2);
                     @endphp
                     @foreach ($forecastSummaryParagraphs as $para)
                     <p style="margin-bottom: 12px; text-align: justify; line-height: 1.6;">

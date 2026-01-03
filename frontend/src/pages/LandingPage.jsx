@@ -428,6 +428,59 @@ function LandingPage({ isDarkMode, toggleDarkMode }) {
         </div>
       </section>
 
+      {/* Sample Report Section - Promotional */}
+      <section className="px-4 py-10 md:py-14 bg-white dark:bg-gray-800">
+        <div className="container max-w-4xl mx-auto">
+          <div className="flex flex-col items-center text-center">
+            <div className="w-full">
+              <div className="inline-flex items-center px-3 py-1.5 mb-4 text-xs font-bold tracking-wider uppercase rounded-full custom-green-bg custom-green">
+                Hasil Nyata
+              </div>
+              <h2 className="mb-3 text-xl md:text-3xl font-black leading-tight text-gray-900 dark:text-white">
+                Contoh Laporan Bisnis
+                <span className="block mt-0.5" style={{ color: isDarkMode ? "#10B517" : "#167814" }}>
+                  Profesional & Komprehensif
+                </span>
+              </h2>
+              <p className="mb-6 text-xs md:text-sm leading-relaxed text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                Lihat hasil akhir yang akan Anda dapatkan. Grapadi Strategix menghasilkan laporan rencana bisnis standar investor yang siap digunakan.
+              </p>
+
+              <div className="text-xs md:text-sm leading-relaxed text-gray-600 dark:text-gray-400 mb-6">
+                <p className="font-semibold text-gray-900 dark:text-white mb-4">Apa yang Anda dapatkan:</p>
+              </div>
+
+              <ul className="space-y-2.5 md:space-y-3 inline-block text-left mb-8">
+                {[
+                  "Analisis SWOT & Pasar Mendalam",
+                  "Proyeksi Keuangan Otomatis",
+                  "Layout Profesional",
+                  "Export ke PDF"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2.5 text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <CheckCircle size={18} className="text-green-500 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="w-full flex justify-center">
+                <a
+                  href={`${import.meta.env.BASE_URL}assets/docs/sample-report.pdf`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center px-6 md:px-8 py-2.5 md:py-3.5 text-xs md:text-base font-bold text-white transition-all duration-300 transform shadow-lg group rounded-lg hover:scale-105"
+                  style={{ backgroundColor: isDarkMode ? "#10B517" : "#167814" }}
+                >
+                  <FileText className="mr-2" size={18} />
+                  Unduh Contoh Laporan (PDF)
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section - Bold & Professional */}
       <section
         id="contact"
