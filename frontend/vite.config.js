@@ -9,7 +9,7 @@ import tailwindcss from "@tailwindcss/vite";
 //   ],
 // })
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: mode === "production" ? "/grapadistrategix/" : "/",
-}));
+  base: "/",
+});
