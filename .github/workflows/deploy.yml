@@ -42,7 +42,7 @@ jobs:
   deploy-backend:
     name: 🔧 Deploy Backend API
     runs-on: ubuntu-latest
-    environment: Konfigurasi FTP
+    environment: FTP
 
     steps:
       - name: 📥 Checkout code
