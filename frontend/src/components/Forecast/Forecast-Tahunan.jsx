@@ -3,7 +3,7 @@ import { Loader, ArrowLeft, TrendingUp, ChevronDown, ChevronUp, TrendingDown, Sa
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import toast from 'react-hot-toast';
 import { financialSimulationApi } from '../../services/managementFinancial/financialSimulationApi';
-import { forecastResultsApi, forecastDataApi } from '../../services/managementFinancial/forecastApi';
+import { forecastResultsApi, forecastDataApi } from '../../services/forecast/forecastApi';
 
 const ForecastTahunan = ({ onBack }) => {
     const [years, setYears] = useState([]);
