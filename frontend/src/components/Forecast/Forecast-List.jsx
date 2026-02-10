@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Loader, Plus, TrendingUp, ChevronDown, ChevronUp, Save, CheckCircle } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { financialSimulationApi } from '../../services/ManagementFinancial/financialSimulationApi';
+import { financialSimulationApi } from '../../services/managementFinancial/financialSimulationApi';
 import { forecastResultsApi } from '../../services/forecast/forecastApi';
 
 const ForecastList = ({ onCreateNew, onViewGeneratedForecast }) => {

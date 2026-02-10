@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Loader, ArrowLeft, TrendingUp, ChevronDown, ChevronUp, TrendingDown, Save, CheckCircle } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import toast from 'react-hot-toast';
-import { financialSimulationApi } from '../../services/ManagementFinancial/financialSimulationApi';
-import { forecastResultsApi, forecastDataApi } from '../../services/ManagementFinancial/forecastApi';
+import { financialSimulationApi } from '../../services/managementFinancial/financialSimulationApi';
+import { forecastResultsApi, forecastDataApi } from '../../services/managementFinancial/forecastApi';
 
 const ForecastTahunan = ({ onBack }) => {
     const [years, setYears] = useState([]);

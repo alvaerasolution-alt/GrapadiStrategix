@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
-import financialProjectionApi from "../../../services/ManagementFinancial/financialProjectionApi";
+import financialProjectionApi from "../../../services/managementFinancial/financialProjectionApi";
 import { toast } from "react-toastify";
 import { ArrowLeft, Plus, TrendingUp, Calculator, Eye, Trash2, BarChart3, DollarSign, Target, Clock } from "lucide-react";
 

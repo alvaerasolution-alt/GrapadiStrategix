@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AlertCircle, TrendingUp, BarChart3 } from 'lucide-react';
-import { forecastResultsApi } from '../../services/ManagementFinancial/forecastApi';
+import { forecastResultsApi } from '../../services/managementFinancial/forecastApi';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const ForecastCreate = ({ onCancel }) => {

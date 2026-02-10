@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { getMonthlyReport } from '../../../services/ManagementFinancial/monthlyReportApi';
+import { getMonthlyReport } from '../../../services/managementFinancial/monthlyReportApi';
 import { ArrowLeft, Printer, Calendar as CalendarIcon, TrendingUp, BarChart3, Wallet, Landmark, Info, Filter } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
@@ -19,7 +19,7 @@ function currency(n) {
   }).format(n ?? 0);
 }
 
-const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
 const helpers = {
   is: 'Laporan Laba Rugi menunjukkan kinerja keuangan bisnis Anda selama periode tertentu. Ini mencakup pendapatan, biaya operasional, dan laba bersih yang dihasilkan setiap bulan.',
@@ -32,12 +32,12 @@ function Metrics({ data }) {
   const totals = useMemo(() => {
     if (!data) return { revenue: 0, netIncome: 0, cashEnd: 0, totalAssets: 0 };
 
-    const revenue = Array.from({ length: 12 }).reduce((acc, _, i) => acc + (data.incomeStatement?.[i+1]?.revenue || 0), 0);
-    const netIncome = Array.from({ length: 12 }).reduce((acc, _, i) => acc + (data.incomeStatement?.[i+1]?.netIncome || 0), 0);
+    const revenue = Array.from({ length: 12 }).reduce((acc, _, i) => acc + (data.incomeStatement?.[i + 1]?.revenue || 0), 0);
+    const netIncome = Array.from({ length: 12 }).reduce((acc, _, i) => acc + (data.incomeStatement?.[i + 1]?.netIncome || 0), 0);
 
-    const lastIdx = [...Array(12).keys()].reverse().find(i => data.cashFlow?.[i+1]) ?? 11;
-    const cashEnd = data.cashFlow?.[lastIdx+1]?.cashEnding || 0;
-    const totalAssets = data.balanceSheet?.[lastIdx+1]?.assets?.total || 0;
+    const lastIdx = [...Array(12).keys()].reverse().find(i => data.cashFlow?.[i + 1]) ?? 11;
+    const cashEnd = data.cashFlow?.[lastIdx + 1]?.cashEnding || 0;
+    const totalAssets = data.balanceSheet?.[lastIdx + 1]?.assets?.total || 0;
 
     return { revenue, netIncome, cashEnd, totalAssets };
   }, [data]);
@@ -539,10 +539,10 @@ export default function MonthlyReports({ selectedBusiness, onBack }) {
       {/* Tabs + Year Filter */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => setTab('is')} className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${tab==='is' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}>Laba Rugi</button>
-          <button onClick={() => setTab('cf')} className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${tab==='cf' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}>Arus Kas</button>
-          <button onClick={() => setTab('bs')} className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${tab==='bs' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}>Neraca</button>
-          <button onClick={() => setTab('tr')} className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${tab==='tr' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}>Grafik Tren</button>
+          <button onClick={() => setTab('is')} className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${tab === 'is' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}>Laba Rugi</button>
+          <button onClick={() => setTab('cf')} className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${tab === 'cf' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}>Arus Kas</button>
+          <button onClick={() => setTab('bs')} className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${tab === 'bs' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}>Neraca</button>
+          <button onClick={() => setTab('tr')} className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${tab === 'tr' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}>Grafik Tren</button>
         </div>
         <div className="relative">
           <button onClick={() => setShowYearFilter(!showYearFilter)} className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg border transition-all ${showYearFilter ? 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}>
